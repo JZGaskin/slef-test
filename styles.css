@@ -4,8 +4,16 @@ body, h1, p, ul {
     padding: 0;
 }
 
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
 body {
     font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 ul {
@@ -18,33 +26,42 @@ a {
 
 /* Header and Navigation styles */
 header {
-    background-color: #333;
+    background-color: #505050;
     padding: 10px 20px;
 }
-
 .logo {
-    color: #fff;
-    font-weight: bold;
+    width: 100px;
+    height: auto;
 }
+
 
 nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
+}
+
+.fixed-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000; /* Make sure the navbar is on top of other content */
 }
 
 .hamburger {
+    display: flex;
     background: transparent;
     border: none;
     cursor: pointer;
-    display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
 }
 
 .hamburger-line {
-    background-color: #fff;
+    background-color: #f57e20;
     height: 2px;
     width: 20px;
     margin: 2px 0;
@@ -52,30 +69,65 @@ nav {
 
 .nav-links {
     display: none;
+    flex-direction: column;
+    text-align: center;
+    position: absolute;
+    top: 100%; /* Aligns the nav-links below the hamburger menu */
+    right: 0; /* Aligns the nav-links to the right side of the screen */
+    background-color: #000; /* Add a background color for better visibility */
+    padding: 10px; /* Add some padding around the nav-links */
 }
 
-.nav-links.active {
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background-color: #333;
-    z-index: 1;
+
+.nav-links li {
+    margin: 10px 0;
 }
 
 .nav-links a {
     color: #fff;
     padding: 10px 20px;
+    width: 100%;
+    text-align: center;
+}
+
+.nav-links.active {
+    display: flex;
+}
+
+.main-content {
+    flex-grow: 1;
+    padding-top: 70px;
 }
 
 /* Hero section styles */
 .hero {
+    position: relative;
+    background-image: url('images/mightymite.jpg');
     background-color: #ebebeb;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     padding: 40px 20px;
     text-align: center;
+    min-height: 300px; /* Add a minimum height for the hero section */
 }
+
+.hero-content {
+    position: relative; /* Added to ensure text appears above the overlay */
+    color: #fff;
+    margin-top: 40px;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
 
 .hero h1 {
     font-size: 2rem;
@@ -87,5 +139,360 @@ nav {
 }
 
 .cta-button {
-    background-color: #f7931e;
-    color:
+    background-color: #f57e20;
+    color: #fff;
+    padding: 10px 20px;
+    display: inline-block;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.cta-button:hover {
+    background-color: #f57e20;
+}
+
+/* Footer styles */
+footer {
+    background-color: #333;
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Media Query for larger screens */
+@media (min-width: 768px) {
+    .hamburger {
+        display: none;
+    }
+
+    .nav-links {
+        display: flex;
+        flex-direction: row;
+        position: static;
+        background-color: transparent;
+        padding: 0; /* Reset the padding for larger screens */
+    }
+
+    .logo {
+        flex-grow: 0;
+    }
+
+    .nav-links li {
+        margin-left: 10px 0;
+    }
+
+    .hero h1 {
+        font-size: 3rem;
+    }
+
+    .heroabout h1 {
+        font-size: 3rem;
+    }
+
+    .heroturf h1 {
+        font-size: 3rem;
+    }
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+}
+
+.nav-center {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.nav-center li {
+    display: inline;
+}
+
+.spacer {
+    flex: 1;
+}
+
+.mission {
+    padding: 20px 20px;
+    text-align: center;
+}
+
+.mission h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.mission p {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+}
+
+.collage {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px; /* Adjust the space between photos */
+    margin-bottom: 40px;
+    background-color: #505050;
+    padding: 20px; 
+}
+
+.collage-item {
+    flex-basis: calc(33.33% - 20px);
+    box-sizing: border-box;
+    padding-top: calc((33.33% - 20px) * 3 / 4); /* Maintain a 4:3 aspect ratio */
+    position: relative;
+}
+
+@media (max-width: 768px) {
+    .collage-item {
+        flex-basis: calc(50% - 20px);
+        padding-top: calc((50% - 20px) * 3 / 4); /* Maintain a 4:3 aspect ratio on medium screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .collage-item {
+        flex-basis: 100%;
+        padding-top: 75%; /* Maintain a 4:3 aspect ratio on small screens */
+    }
+}
+
+  
+  .collage-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensure the image maintains its aspect ratio while filling the container */
+    position: absolute; /* Position the image absolutely within the collage-item container */
+    top: 0;
+    left: 0;
+  }
+
+@media (max-width: 768px) {
+    .collage-item {
+        flex-basis: calc(50% - 20px);
+    }
+}
+
+@media (max-width: 480px) {
+    .collage-item {
+        flex-basis: 100%;
+    }
+}
+
+/* Hero section styles */
+.heroabout {
+    position: relative;
+    background-image: url('images/muddybuddy.jpg');
+    background-color: #ebebeb;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    padding: 40px 20px;
+    text-align: center;
+    min-height: 300px; /* Add a minimum height for the hero section */
+}
+
+.heroabout-content {
+    position: relative; /* Added to ensure text appears above the overlay */
+    color: #fff;
+    margin-top: 40px;
+}
+
+.heroabout::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+
+.heroabout h1 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.heroabout p {
+    margin-bottom: 30px;
+}
+
+@media (min-width: 768px) {
+    .heroabout h1 {
+        font-size: 3rem;
+    }
+}
+
+.mission-section {
+    background-color: #ebebeb;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.mission-section h2,
+.mission-section h3 {
+    margin-bottom: 10px;
+}
+
+.mission-section p,
+.mission-section ul {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.mission-section ul {
+    padding-left: 20px;
+}
+
+.mission-section a {
+    color: #f57e20;
+    text-decoration: none;
+}
+
+.mission-section a:hover {
+    text-decoration: underline;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 40px;
+}
+
+.container iframe {
+    width: 100%;
+    max-width: 800px; /* Adjust this value according to your desired maximum width */
+}
+
+@media (max-width: 767px) {
+    .container iframe {
+        max-width: 100%; /* Adjust this value according to your desired maximum width for small screens */
+    }
+}
+
+
+/* Hero section styles */
+.heroturf {
+    position: relative;
+    background-image: url('images/Turf.jpg');
+    background-color: #ebebeb;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    padding: 40px 20px;
+    text-align: center;
+    min-height: 300px; /* Add a minimum height for the hero section */
+}
+
+.heroturf-content {
+    position: relative; /* Added to ensure text appears above the overlay */
+    color: #fff;
+    margin-top: 40px;
+}
+
+.heroturf::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+
+.heroturf h1 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.heroturf p {
+    margin-bottom: 30px;
+}
+
+@media (min-width: 768px) {
+    .heroturf h1 {
+        font-size: 3rem;
+    }
+}
+
+.field-locations {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.location {
+    margin-bottom: 20px;
+    width: 70%; /* Adjust this value according to your desired width */
+    text-align: left; /* Align the text to the left */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.location h3 {
+    margin-bottom: 5px;
+}
+
+.location a {
+    color: #f57e20;
+    text-decoration: underline;
+}
+
+.facebook-icon {
+    color: #000;
+    font-size: 1.5rem;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    margin: 20px;
+}
+
+@media (min-width: 768px) {
+    .facebook-icon {
+        color: #000;
+        font-size: 1.5rem;
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        margin: 10px 0px;
+    }
+}
+
+.custom-bullets ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.custom-bullets li {
+    position: relative;
+    padding-left: 1.5em;
+    margin-bottom: 10px;
+}
+
+.custom-bullets li:before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    font-size: 1.2em;
+    color: #000; /* Change the bullet color here */
+}

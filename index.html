@@ -4,35 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css">
-    <title>Youth Football Organization</title>
+    <title>Little Eagle Football</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
 </head>
+
 <body>
-    <header>
+    <header class="fixed-navbar">
         <nav>
-            <a href="#" class="logo">Youth Football</a>
+            <div class="nav-container">
+                <a href="/"><img src="images/SLEFLogo5.png" alt="Somerset Little Eagles" class="logo"></a>
+                <div class="nav-right">
+                    <ul class="nav-links">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/about.html">About</a></li>
+                        <li><a href="/register.html">Register</a></li>
+                        <li><a href="/fields.html">Fields</a></li>
+                        <li><a href="/contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Remove the empty-column div -->
+            </div>
             <button class="hamburger">
                 <span class="hamburger-line"></span>
                 <span class="hamburger-line"></span>
                 <span class="hamburger-line"></span>
             </button>
-            <ul class="nav-links">
-                <li><a href="#">Home</a></li>
-                <li><a href="#">About</a></li>
-                <li><a href="#">Schedule</a></li>
-                <li><a href="#">Gallery</a></li>
-                <li><a href="#">Contact</a></li>
-            </ul>
+            <a href="https://www.facebook.com/SomersetLittleEagleFootball" target="_blank" class="facebook-icon cta-button">
+                <i class="fab fa-facebook-f"></i>
+            </a>
         </nav>
+        
     </header>
-    <main>
+    <main class="main-content">
         <section class="hero">
-            <h1>Welcome to the Youth Football Organization</h1>
-            <p>Join us and become a part of the exciting world of youth football!</p>
-            <a href="#" class="cta-button">Learn More</a>
+            <div class="hero-content">
+                <h1>Somerset</h1>
+                <p>Little Eagle Football & Cheer</p>
+                <a href="register.html" class="cta-button">Register</a>
+            </div>            
+        </section>
+        
+        <section class="mission container">
+            <h2>OUR MISSION</h2>
+            <p>Our mission is to provide high level developmental football and cheer programs.</p>
+            <a href="about.html" class="cta-button">About Us</a>
+        </section>
+        <section class="collage">
+            <div class="collage-item">
+                <img src="images/img-1.jpg" alt="Photo 1">
+            </div>
+            <div class="collage-item">
+                <img src="images/img-2.jpg" alt="Photo 2">
+            </div>
+            <div class="collage-item">
+                <img src="images/img-3.jpg" alt="Photo 3">
+            </div>
         </section>
     </main>
     <footer>
-        <p>&copy; 2023 Youth Football Organization. All rights reserved.</p>
+        <p>&copy; 2023 Little Eagle Football & Cheer. All rights reserved.</p>
     </footer>
     <script src="script.js"></script>
 </body>

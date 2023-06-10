@@ -368,6 +368,21 @@ footer {
     text-decoration: underline;
 }
 
+.mission-section cta-button {
+    background-color: #f57e20;
+    color: #fff;
+    padding: 10px 20px;
+    display: inline-block;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.cta-button:hover {
+    background-color: #f57e20;
+}
+
 .container {
     display: flex;
     flex-direction: column;

@@ -1,55 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../styles.css">
-    <title>Little Eagle Football</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="../styles.css">
+        <title>Little Eagle Football</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
+    </head>
 
-<body>
-    <header class="fixed-navbar">
-        <nav>
-            <div class="nav-container">
-                <a href="../index.html"><img src="../images/SLEFLogo5.png" alt="Somerset Little Eagles" class="logo"></a>
-                <ul class="nav-links">
-                    <li><a href="../index.html">Home</a></li>
-                    <li><a href="about.html">About</a></li>
-                    <li><a href="register.html">Register</a></li>
-                    <li><a href="fields.html">Fields</a></li>
-                    <li><a class="active" href="contact.html">Contact</a></li>
-                </ul>
-            </div>
-            <button class="hamburger">
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
-            </button>
-            <a href="https://www.facebook.com/SomersetLittleEagleFootball" target="_blank" class="facebook-icon cta-button">
-                <i class="fab fa-facebook-f"></i>
-            </a>
-        </nav>
-        
-    </header>
-    <main class="main-content container">
-        <div id="mf_placeholder" 
+    <body>
+        <header class="fixed-navbar">
+            <nav>
+                <div class="nav-container">
+                    <a href="../index.html"><img src="../images/SLEFLogo5.png" alt="Somerset Little Eagles" class="logo"></a>
+                    <ul class="nav-links">
+                        <li>
+                            <a href="../index.html">Home</a>
+                        </li>
+                        <li>
+                            <a href="about.html">About</a>
+                        </li>
+                        <li>
+                            <a href="register.html">Register</a>
+                        </li>
+                        <li>
+                            <a href="fields.html">Fields</a>
+                        </li>
+                        <li>
+                            <a class="active" href="contact.html">Contact</a>
+                        </li>
+                    </ul>
+                </div>
+                <button class="hamburger">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+                <a href="https://www.facebook.com/SomersetLittleEagleFootball" target="_blank" class="facebook-icon cta-button">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+            </nav>
+
+        </header>
+        <main class="main-content container">
+            <div id="mf_placeholder" 
             data-formurl="https://z33design.forms-db.com/embed.php?id=24057" 
             data-formheight="555"  
             data-formtitle="Contact Us"  
-            data-paddingbottom="10">
-        </div>
+            data-paddingbottom="10"></div>
+            <script>
+                (function (f, o, r, m) {
+                    r = f.createElement('script');
+                    r.async = 1;
+                    r.src = o + 'js/mf.js';
+                    m = f.getElementById('mf_placeholder');
+                    m
+                        .parentNode
+                        .insertBefore(r, m);
+                })(document, 'https://assets.forms-db.com/');
+            </script>
+
+        </main>
+        <footer>
+            <p>&copy; <span id="year"></span> Little Eagle Football & Cheer. All rights reserved.</p>
+        </footer>
+
         <script>
-            (function(f,o,r,m){
-                r=f.createElement('script');r.async=1;r.src=o+'js/mf.js';
-                m=f.getElementById('mf_placeholder'); m.parentNode.insertBefore(r, m);
-            })(document,'https://assets.forms-db.com/');
+            // Get the current year
+            const currentYear = new Date().getFullYear();
+
+            // Set the current year in the 'year' span
+            document
+                .getElementById('year')
+                .textContent = currentYear;
         </script>
-        
-    </main>
-    <footer>
-        <p>&copy; 2023 Little Eagle Football & Cheer. All rights reserved.</p>
-    </footer>
-    <script src="../script.js"></script>
-</body>
+
+        <script src="../script.js"></script>
+    </body>
 </html>

@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="styles.css"/>
     <title>Little Eagle Football</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"
-    />
+/>
   </head>
 
   <body>
@@ -20,14 +20,24 @@
               src="images/SLEFLogo5.png"
               alt="Somerset Little Eagles"
               class="logo"
-          /></a>
+/></a>
           <div class="nav-right">
             <ul class="nav-links">
-              <li><a class="active" href="index.html">Home</a></li>
-              <li><a href="pages/about.html">About</a></li>
-              <li><a href="pages/register.html">Register</a></li>
-              <li><a href="pages/fields.html">Fields</a></li>
-              <li><a href="pages/contact.html">Contact</a></li>
+              <li>
+                <a class="active" href="index.html">Home</a>
+              </li>
+              <li>
+                <a href="pages/about.html">About</a>
+              </li>
+              <li>
+                <a href="pages/register.html">Register</a>
+              </li>
+              <li>
+                <a href="pages/fields.html">Fields</a>
+              </li>
+              <li>
+                <a href="pages/contact.html">Contact</a>
+              </li>
             </ul>
           </div>
 
@@ -50,11 +60,14 @@
     <main class="main-content">
       <section class="hero">
         <div class="hero-content">
-          <h1>Somerset</h1>
-          <p>Little Eagle Football & Cheer</p>
-          <a href="pages/register.html" class="cta-button">Register</a>
+          <h1>
+            <span>Somerset</span></h1>
+          <h2>
+            <span>Little Eagle Football & Cheer</span></h2>
+          <a href="pages/register.html" class="cta-button">Register Today!</a>
         </div>
       </section>
+
       <section class="mission-section">
         <div class="div">
           All players must have a completed
@@ -63,36 +76,47 @@
             >Physical Form</a
           >
         </div>
-    </br>
-        <div class="div">
+      </br>
+      <div class="div">
           Completed forms can be submitted here:
           <a href="pages/physical.html">Submit Physical</a>
-        </div>
-      </section>
+      </div>
+    </section>
 
-      <section class="mission container">
-        <h2>OUR MISSION</h2>
-        <p>
+    <section class="mission container">
+      <h2>OUR MISSION</h2>
+      <p>
           Our mission is to provide high level developmental football and cheer
           programs.
         </p>
-        <a href="pages/about.html" class="cta-button">About Us</a>
-      </section>
-      <section class="collage">
-        <div class="collage-item">
-          <img src="images/img-1.jpg" alt="Photo 1" />
-        </div>
-        <div class="collage-item">
-          <img src="images/img-2.jpg" alt="Photo 2" />
-        </div>
-        <div class="collage-item">
-          <img src="images/img-3.jpg" alt="Photo 3" />
-        </div>
-      </section>
-    </main>
-    <footer>
-      <p>&copy; 2023 Little Eagle Football & Cheer. All rights reserved.</p>
-    </footer>
-    <script src="script.js"></script>
-  </body>
+      <a href="pages/about.html" class="cta-button">About Us</a>
+    </section>
+    <section class="collage">
+      <div class="collage-item">
+        <img src="images/img-1.jpg" alt="Photo 1"/>
+      </div>
+      <div class="collage-item">
+        <img src="images/img-2.jpg" alt="Photo 2"/>
+      </div>
+      <div class="collage-item">
+        <img src="images/img-3.jpg" alt="Photo 3"/>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <p>&copy; <span id="year"></span> Little Eagle Football & Cheer. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Get the current year
+    const currentYear = new Date().getFullYear();
+
+    // Set the current year in the 'year' span
+    document
+      .getElementById('year')
+      .textContent = currentYear;
+  </script>
+
+  <script src="script.js"></script>
+</body>
 </html>

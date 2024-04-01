@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="../styles.css" />
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="../styles.css"/>
     <title>Little Eagle Football</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"
-    />
+/>
   </head>
 
   <body>
@@ -20,13 +20,23 @@
               src="../images/SLEFLogo5.png"
               alt="Somerset Little Eagles"
               class="logo"
-          /></a>
+/></a>
           <ul class="nav-links">
-            <li><a href="../index.html">Home</a></li>
-            <li><a href="about.html">About</a></li>
-            <li><a href="register.html">Register</a></li>
-            <li><a href="fields.html">Fields</a></li>
-            <li><a class="active" href="contact.html">Contact</a></li>
+            <li>
+              <a href="../index.html">Home</a>
+            </li>
+            <li>
+              <a href="about.html">About</a>
+            </li>
+            <li>
+              <a href="register.html">Register</a>
+            </li>
+            <li>
+              <a href="fields.html">Fields</a>
+            </li>
+            <li>
+              <a class="active" href="contact.html">Contact</a>
+            </li>
           </ul>
         </div>
         <button class="hamburger">
@@ -44,21 +54,21 @@
       </nav>
     </header>
     <main class="main-content container">
-      <div
-        id="mf_placeholder"
-        data-formurl="https://z33design.forms-db.com/embed.php?id=24969"
-        data-formheight="449"
-        data-formtitle="Physicals - 2023"
-        data-paddingbottom="10"
-      ></div>
+      <div id="mf_placeholder" 
+     data-formurl="https://z33design.forms-db.com/embed.php?id=31564" 
+     data-formheight="448"  
+     data-formtitle="Submit Physicals for 2024"  
+     data-paddingbottom="10"></div>
       <script>
         (function (f, o, r, m) {
-          r = f.createElement("script");
+          r = f.createElement('script');
           r.async = 1;
-          r.src = o + "js/mf.js";
-          m = f.getElementById("mf_placeholder");
-          m.parentNode.insertBefore(r, m);
-        })(document, "https://assets.forms-db.com/");
+          r.src = o + 'js/mf.js';
+          m = f.getElementById('mf_placeholder');
+          m
+            .parentNode
+            .insertBefore(r, m);
+        })(document, 'https://assets.forms-db.com/');
       </script>
       <section class="mission-section">
         All players must have a completed
@@ -69,8 +79,19 @@
       </section>
     </main>
     <footer>
-      <p>&copy; 2023 Little Eagle Football & Cheer. All rights reserved.</p>
+      <p>&copy; <span id="year"></span> Little Eagle Football & Cheer. All rights reserved.</p>
     </footer>
+
+    <script>
+      // Get the current year
+      const currentYear = new Date().getFullYear();
+
+      // Set the current year in the 'year' span
+      document
+        .getElementById('year')
+        .textContent = currentYear;
+    </script>
+
     <script src="../script.js"></script>
   </body>
 </html>

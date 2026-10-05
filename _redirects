@@ -8,13 +8,13 @@
 # No real page URL changes in this migration — these only make the canonical form
 # explicit and add short aliases that currently 404.
 
-/index.html              /                        301
-/pages/about.html        /pages/about             301
-/pages/register.html     /pages/register          301
-/pages/fields.html       /pages/fields            301
-/pages/contact.html      /pages/contact           301
-/pages/physical.html     /pages/physical          301
-/pages/thankyou.html     /pages/thankyou          301
+/index.html              /                        301!
+/pages/about.html        /pages/about             301!
+/pages/register.html     /pages/register          301!
+/pages/fields.html       /pages/fields            301!
+/pages/contact.html      /pages/contact           301!
+/pages/physical.html     /pages/physical          301!
+/pages/thankyou.html     /pages/thankyou          301!
 
 /about                   /pages/about             301
 /register                /pages/register          301
@@ -22,3 +22,10 @@
 /contact                 /pages/contact           301
 /physical                /pages/physical          301
 /thankyou                /pages/thankyou          301
+
+# The seven legacy .html paths above are FORCED (`301!`). Netlify shadows an
+# unforced rule when a real file exists at that path (see the Netlify
+# "shadowing" docs); those .html files DO exist (parity with the GitHub Pages
+# copy and the legacy site), so without the `!` the file wins and the clean
+# canonical URL is not authoritative. The short aliases below are not shadowed
+# by any file and need no `!`.

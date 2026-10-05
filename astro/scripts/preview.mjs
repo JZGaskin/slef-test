@@ -26,6 +26,12 @@ const PORT = Number(arg('port', '4321'));
 // --- redirects --------------------------------------------------------------
 // Priority: the served directory's own _redirects (a no-build deploy), else the
 // netlify.toml of the Astro project (a built deploy). Same rules either way.
+//
+// FORCE matters, and it is why this server models it: Netlify SHADOWS an unforced
+// redirect rule when a real file exists at that exact path, and only a forced rule
+// (`301!` in _redirects, `force = true` in netlify.toml) wins over the file. A
+// preview that ignored shadowing would be MORE PERMISSIVE than production and would
+// pass a build whose legacy .html URLs still answer 200 on the real deploy.
 const readIf = (p) => (fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : '');
 let redirects = [];
 const dirRedirects = path.join(DIR, '_redirects');
@@ -36,13 +42,50 @@ if (fs.existsSync(dirRedirects)) {
     .filter(Boolean)
     .map((l) => l.split(/\s+/))
     .filter((p) => p.length >= 2)
-    .map(([from, to, status]) => ({ from, to, status: Number(status) || 301 }));
+    .map(([from, to, status]) => ({
+      from,
+      to,
+      status: Number(String(status).replace('!', '')) || 301,
+      force: String(status).endsWith('!'),
+    }));
 } else {
   const toml = readIf(path.join(ROOT, 'netlify.toml'));
   redirects = [...toml.matchAll(/\[\[redirects\]\]([\s\S]*?)(?=\n\[\[|\n\[|\s*$)/g)].map((m) => {
     const get = (k) => (m[1].match(new RegExp(`^\\s*${k}\\s*=\\s*"([^"]*)"`, 'm')) || [])[1];
-    return { from: get('from'), to: get('to'), status: Number(get('status') || 301) };
+    const has = (k) => new RegExp(`^\\s*${k}\\s*=\\s*true\\s*$`, 'm').test(m[1]);
+    return { from: get('from'), to: get('to'), status: Number(get('status') || 301), force: has('force') };
   });
+}
+
+// Netlify's shadowing test: is there a real file at the rule's exact path?
+const fileAt = (p) => {
+  const f = path.join(DIR, p.replace(/^\/+/, ''));
+  return f.startsWith(DIR) && fs.existsSync(f) && fs.statSync(f).isFile();
+};
+
+// --- shadowing guard ---------------------------------------------------------
+// The seven legacy .html URLs MUST redirect. They also exist as real files on a
+// parity build, so on Netlify only a FORCED rule can win. If a build ships the file
+// without the forced rule, the local preview must say so loudly instead of quietly
+// agreeing with a deploy that behaves differently.
+const LEGACY_HTML = [
+  '/index.html', '/pages/about.html', '/pages/register.html', '/pages/fields.html',
+  '/pages/contact.html', '/pages/physical.html', '/pages/thankyou.html',
+];
+const unforcedLegacy = LEGACY_HTML.filter((p) => {
+  const r = redirects.find((x) => x.from === p);
+  return fileAt(p) && !(r && r.force && [301, 302].includes(r.status));
+});
+if (unforcedLegacy.length) {
+  console.error(`preview: REFUSING TO SERVE — ${unforcedLegacy.length} legacy .html path(s) exist as files`);
+  for (const p of unforcedLegacy) console.error(`  ${p} — the file would be served (200); Netlify needs a FORCED rule (301!)`);
+  console.error('  Fix: use `301!` in _redirects (or force = true in netlify.toml). Refusing to preview a build whose redirects cannot fire.');
+  process.exit(3);
+}
+for (const r of redirects) {
+  if (!r.force && fileAt(r.from)) {
+    console.log(`preview: note — rule ${r.from} is shadowed by an existing file (Netlify behaviour), so it will not fire`);
+  }
 }
 
 // --- headers ----------------------------------------------------------------
@@ -84,9 +127,12 @@ const server = http.createServer((req, res) => {
   const [rawPath] = req.url.split('?');
   const urlPath = decodeURIComponent(rawPath);
 
-  // explicit redirect map
+  // explicit redirect map — but an unforced rule is SHADOWED by a real file at the
+  // same path (Netlify's documented behaviour), so fall through to file serving.
   for (const r of redirects) {
-    if (r.from === urlPath) return send(res, r.status, '', { Location: r.to });
+    if (r.from !== urlPath) continue;
+    if (!r.force && fileAt(r.from)) continue;
+    return send(res, r.status, '', { Location: r.to });
   }
 
   // candidate files, in the order Netlify's pretty-URL handling resolves them
@@ -116,4 +162,5 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`preview: http://127.0.0.1:${PORT}  (dir ${DIR})`);
   console.log(`redirects loaded: ${redirects.length}  (from ${fs.existsSync(dirRedirects) ? '_redirects' : 'netlify.toml'})`);
+  console.log(`  forced (301!): ${redirects.filter((r) => r.force).length}  — unforced rules are shadowed by an existing file, as on Netlify`);
 });

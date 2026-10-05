@@ -19,36 +19,43 @@
   from = "/index.html"
   to = "/"
   status = 301
+  force = true
 
 [[redirects]]
   from = "/pages/about.html"
   to = "/pages/about"
   status = 301
+  force = true
 
 [[redirects]]
   from = "/pages/register.html"
   to = "/pages/register"
   status = 301
+  force = true
 
 [[redirects]]
   from = "/pages/fields.html"
   to = "/pages/fields"
   status = 301
+  force = true
 
 [[redirects]]
   from = "/pages/contact.html"
   to = "/pages/contact"
   status = 301
+  force = true
 
 [[redirects]]
   from = "/pages/physical.html"
   to = "/pages/physical"
   status = 301
+  force = true
 
 [[redirects]]
   from = "/pages/thankyou.html"
   to = "/pages/thankyou"
   status = 301
+  force = true
 
 # Short aliases (these paths currently 404 on the live site).
 [[redirects]]

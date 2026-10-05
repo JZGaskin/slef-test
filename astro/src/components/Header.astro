@@ -1,0 +1,81 @@
+---
+import { NAV, SITE, FACEBOOK_ICON_PATH } from '../data/site';
+
+interface Props {
+  active?: string;
+  /** Preserve the live markup exactly: the home page wraps the nav list in
+      `.nav-right` (15px right padding), the /pages/* pages do not. */
+  wrapNav?: boolean;
+}
+
+const { active = '', wrapNav = false } = Astro.props;
+---
+
+<header class="fixed-navbar">
+  <nav>
+    <div class="nav-container">
+      <a href="/"
+        ><img
+          src="/images/SLEFLogo5.png"
+          alt="Somerset Little Eagles"
+          class="logo"
+          width="170"
+          height="115"
+        /></a
+      >
+      {
+        wrapNav ? (
+          <div class="nav-right">
+            <ul class="nav-links" id="primary-nav">
+              {NAV.map((item) =>
+                item.key === active ? (
+                  <li>
+                    <a class="active" href={item.href}>
+                      {item.label}
+                    </a>
+                  </li>
+                ) : (
+                  <li>
+                    <a href={item.href}>{item.label}</a>
+                  </li>
+                ),
+              )}
+            </ul>
+          </div>
+        ) : (
+          <ul class="nav-links" id="primary-nav">
+            {NAV.map((item) =>
+              item.key === active ? (
+                <li>
+                  <a class="active" href={item.href}>
+                    {item.label}
+                  </a>
+                </li>
+              ) : (
+                <li>
+                  <a href={item.href}>{item.label}</a>
+                </li>
+              ),
+            )}
+          </ul>
+        )
+      }
+    </div>
+    <button class="hamburger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="primary-nav">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
+    <a
+      href={SITE.facebook}
+      target="_blank"
+      rel="noopener"
+      class="facebook-icon cta-button"
+      aria-label="Little Eagle Football & Cheer on Facebook"><svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 320 512"
+        aria-hidden="true"><path d={FACEBOOK_ICON_PATH}></path></svg
+      ></a
+    >
+  </nav>
+</header>

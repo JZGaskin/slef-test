@@ -1,0 +1,24 @@
+# URL parity for the Astro rebuild.
+#
+# This file mirrors the `[[redirects]]` rules in netlify.toml, because a site that
+# is deployed WITHOUT a build step (branch deploy of the prebuilt output, or a
+# direct draft deploy) reads _redirects and does not read netlify.toml. Both lists
+# are identical; netlify.toml is the copy a built site uses.
+#
+# No real page URL changes in this migration — these only make the canonical form
+# explicit and add short aliases that currently 404.
+
+/index.html              /                        301
+/pages/about.html        /pages/about             301
+/pages/register.html     /pages/register          301
+/pages/fields.html       /pages/fields            301
+/pages/contact.html      /pages/contact           301
+/pages/physical.html     /pages/physical          301
+/pages/thankyou.html     /pages/thankyou          301
+
+/about                   /pages/about             301
+/register                /pages/register          301
+/fields                  /pages/fields            301
+/contact                 /pages/contact           301
+/physical                /pages/physical          301
+/thankyou                /pages/thankyou          301

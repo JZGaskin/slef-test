@@ -1,0 +1,43 @@
+---
+import { MACHFORM } from '../data/site';
+
+interface Props {
+  /** The MachForm form id. */
+  id: string;
+  /** The form's own title (shown in the vendor's embed markup). */
+  title: string;
+  /**
+   * The height the vendor's own embed snippet carries. It is only a pre-resize
+   * fallback — mf.js measures the real form and resizes the iframe — but it is
+   * preserved exactly so the very first paint matches the current site.
+   */
+  height: string | number;
+  paddingBottom?: string | number;
+}
+
+const { id, title, height, paddingBottom = '10' } = Astro.props;
+---
+
+<div
+  id="mf_placeholder"
+  data-formurl={`${MACHFORM.host}/embed.php?id=${id}`}
+  data-formheight={String(height)}
+  data-formtitle={title}
+  data-paddingbottom={String(paddingBottom)}
+>
+</div>
+<script is:inline>
+  (function (f, o, r, m) {
+      r = f.createElement('script');
+      r.async = 1;
+      r.src = o + 'js/mf.js';
+      m = f.getElementById('mf_placeholder');
+      m
+          .parentNode
+          .insertBefore(r, m);
+  })(document, 'https://assets.forms-db.com/');
+</script>
+<!-- The loader script above is kept INLINE and byte-for-byte in its original
+     form on purpose: mf.js finds its placeholder by the id `mf_placeholder`
+     and performs a top-level navigation back to /pages/thankyou after submit.
+     Bundling or deferring it, or renaming the id, breaks registration. -->

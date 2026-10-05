@@ -1,0 +1,21 @@
+{
+  "name": "little-eagle-football",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Little Eagle Football & Cheer - Somerset PA youth football and cheer. Astro + Tailwind rebuild (parity-first).",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "3.7.4",
+    "@tailwindcss/vite": "4.3.3",
+    "astro": "5.18.2",
+    "tailwindcss": "4.3.3"
+  },
+  "devDependencies": {
+    "pngjs": "^7.0.0"
+  }
+}

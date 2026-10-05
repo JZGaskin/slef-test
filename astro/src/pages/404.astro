@@ -1,0 +1,19 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="Page Not Found | Little Eagle Football & Cheer"
+  description="That page could not be found. Head back to Little Eagle Football & Cheer."
+  noindex={true}
+>
+  <main class="main-content container">
+    <!-- This page is new in the rebuild, so it is the one place the new stack's
+         Tailwind utilities are used directly. -->
+    <section class="text-center py-12 px-5">
+      <h1 class="text-3xl font-bold mb-4 text-slef-ink">Page not found</h1>
+      <p class="mb-6">Sorry, we couldn't find that page.</p>
+      <a class="cta-button" href="/">Back to Home</a>
+    </section>
+  </main>
+</Base>

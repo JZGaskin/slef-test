@@ -1,0 +1,18 @@
+---
+import Base from '../../layouts/Base.astro';
+import MachFormEmbed from '../../components/MachFormEmbed.astro';
+import { MACHFORM } from '../../data/site';
+
+const form = MACHFORM.forms.contact;
+---
+
+<Base
+  title="Contact Us | Little Eagle Football & Cheer"
+  description="Contact Somerset Little Eagle Football & Cheer. Send us a message and a current-season officer will get back to you."
+  active="contact"
+>
+  <main class="main-content container">
+    <h1 class="sr-only">Contact Little Eagle Football &amp; Cheer</h1>
+    <MachFormEmbed id={form.id} title={form.title} height={form.height} />
+  </main>
+</Base>

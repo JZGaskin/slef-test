@@ -1,0 +1,18 @@
+---
+import Base from '../../layouts/Base.astro';
+import MachFormEmbed from '../../components/MachFormEmbed.astro';
+import { MACHFORM } from '../../data/site';
+
+const form = MACHFORM.forms.registration2026;
+---
+
+<Base
+  title="Register | Little Eagle Football & Cheer"
+  description="Register for Somerset Little Eagle Football & Cheer. Registration for the season runs April through June. Grades K-6, Somerset PA."
+  active="register"
+>
+  <main class="main-content container">
+    <h1 class="sr-only">Register for Little Eagle Football &amp; Cheer</h1>
+    <MachFormEmbed id={form.id} title={form.title} height={form.height} />
+  </main>
+</Base>

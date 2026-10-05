@@ -1,0 +1,19 @@
+# Baseline security headers.
+#
+# Deliberately NO Content-Security-Policy yet: a CSP has to allow
+#   frame-src  https://z33design.forms-db.com
+#   script-src https://assets.forms-db.com
+# and the inline MachForm loader, and getting it wrong silently breaks
+# registration. That is a cutover decision, not a build decision.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
+  X-Frame-Options: SAMEORIGIN
+
+/images/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.js
+  Cache-Control: public, max-age=0, must-revalidate

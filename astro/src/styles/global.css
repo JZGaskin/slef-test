@@ -1,0 +1,114 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "./legacy.css";
+
+/* ---------------------------------------------------------------------------
+   Tailwind is wired in as the styling system (utilities + theme tokens are
+   available everywhere), but the legacy stylesheet is imported verbatim
+   instead of being rewritten into utilities. That is a deliberate parity
+   decision: the rebuild must not change what the client's families see.
+   Tailwind's preflight is NOT imported, because legacy.css carries its own
+   reset and preflight's heading/margin normalisation would change the
+   rendering of headings that the legacy CSS does not size.
+   New work on this site should use Tailwind utilities.
+--------------------------------------------------------------------------- */
+
+@theme {
+  /* Little Eagle brand tokens, so new work can use real Tailwind utilities
+     (bg-slef-orange, text-slef-ink, ...) instead of hard-coded hex values. */
+  --color-slef-orange: #f57e20;
+  --color-slef-orange-dark: #d47933;
+  --color-slef-ink: #0b0b0b;
+  --color-slef-paper: #ebebeb;
+}
+
+/* ---------------------------------------------------------------------------
+   COLLISION GUARD — legacy `.container` vs the Tailwind utility of the same name.
+
+   Tailwind v4 ships a built-in `container` utility (`width: 100%` plus
+   breakpoint max-widths). Because the legacy markup uses `class="container"`,
+   Tailwind recognises it as a used utility and emits it. The legacy rule does
+   not set `width`, so the utility's `width: 100%` applied on top of the legacy
+   `margin: 40px` — which widened these blocks past the viewport by exactly the
+   margin and produced a horizontal scrollbar on every page at every width
+   (found by scripts/qa.mjs: "no horizontal overflow", live=0px vs build=40/80px).
+
+   This unlayered rule restores the pre-rebuild box exactly. The long-term fix is
+   to rename the legacy class (e.g. `.page-shell`) so the name is not reserved by
+   Tailwind; that is recorded as a follow-up, not done here, because a rename
+   would make this rebuild differ from the live markup.
+--------------------------------------------------------------------------- */
+.container {
+  width: auto;
+  max-width: none;
+}
+
+/* Accessibility helper: real headings without changing the rendered page. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* An <h1> that must look exactly like the default <h2> it replaces, so the
+   semantics improve without a single pixel moving. */
+.as-h2 {
+  display: block;
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 0.83em 0;
+}
+
+/* Inline replacement for the Font Awesome facebook glyph (the only icon the
+   site uses, previously loaded as a whole webfont CDN). Same 320x512 viewBox
+   and the same 0.625em/1em box, so the button is unchanged. */
+.facebook-icon svg {
+  display: block;
+  width: 0.625em;
+  height: 1em;
+  fill: currentColor;
+}
+
+/* ---------------------------------------------------------------------------
+   About hero — reproducing the live rendering with valid markup.
+
+   The live /pages/about hero contains an unclosed <h2> and a stray </p>:
+
+       <h2><span>Little Eagle Football & Cheer</span></p>
+       <a class="cta-button">Register Today!</a>
+
+   The HTML parser therefore puts the call-to-action button INSIDE the <h2> and
+   inserts an empty <p> before it. Two visible consequences, both measured on the
+   live site (1280px):
+     - the button inherits the h2's font size (24px, not 16px) and is 44px tall
+     - the stray paragraph contributes a 30px gap, making the h2 134px tall
+   The rebuild keeps the markup valid but reproduces the same geometry, so the
+   page looks unchanged. Cleaning this up is a design decision for Zach, not a
+   silent by-product of the rebuild — see the handoff.
+--------------------------------------------------------------------------- */
+.heroabout-content h2 {
+  margin-bottom: 30px;
+}
+
+.heroabout-content h2 + .cta-button {
+  font-size: 1.5rem; /* = the h2's own 24px, which the live markup inherits */
+}
+
+/* 404 page */
+.notfound {
+  text-align: center;
+  padding: 60px 20px;
+}
+.notfound h1 {
+  font-size: 2rem;
+  margin-bottom: 15px;
+}
+.notfound p {
+  margin-bottom: 25px;
+}

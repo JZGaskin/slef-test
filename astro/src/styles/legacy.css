@@ -102,7 +102,7 @@ nav {
 /* Hero section styles */
 .hero {
     position: relative;
-    background-image: url('images/mightymite.jpg');
+    background-image: url('/images/mightymite.jpg');
     background-color: #ebebeb;
     background-size: cover;
     background-position: top;
@@ -314,7 +314,7 @@ footer {
 /* Hero section styles */
 .heroabout {
     position: relative;
-    background-image: url('images/muddybuddy.jpg');
+    background-image: url('/images/muddybuddy.jpg');
     background-color: #ebebeb;
     background-size: cover;
     background-position: center;
@@ -436,7 +436,7 @@ footer {
 /* Hero section styles */
 .heroturf {
     position: relative;
-    background-image: url('images/Turf.jpg');
+    background-image: url('/images/Turf.jpg');
     background-color: #ebebeb;
     background-size: cover;
     background-position: center;

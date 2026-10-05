@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /pages/thankyou
+
+Sitemap: https://littleeaglefootball.com/sitemap-index.xml

@@ -1,0 +1,78 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../data/site';
+---
+
+<Base
+  title="Somerset Little Eagle Football & Cheer | Youth Football & Cheer, Somerset PA"
+  description="Somerset Little Eagle Football & Cheer — developmental youth football and cheer for grades K-6 in Somerset, PA. Register, find your field, and get your physical form here."
+  active="home"
+  wrapNav={true}
+>
+  <main class="main-content">
+    <section class="hero">
+      <div class="hero-content">
+        <h1>
+          <span>Somerset</span>
+        </h1>
+        <h2>
+          <span>Little Eagle Football &amp; Cheer</span>
+        </h2>
+        <a class="cta-button" href="/pages/register">Register Today!</a>
+      </div>
+    </section>
+
+    <section class="mission-section">
+      <div class="div">
+        All players must have a completed
+        <a href={SITE.physicalFormPdf}>Physical Form</a>
+      </div>
+      <br />
+      <div class="div">
+        Completed forms can be submitted here:
+        <a href="/pages/physical">Submit Physical</a>
+      </div>
+    </section>
+
+    <section class="mission container">
+      <h2>OUR MISSION</h2>
+      <p>
+        Our mission is to provide high level developmental football and cheer programs.
+      </p>
+      <a class="cta-button" href="/pages/about">About Us</a>
+    </section>
+
+    <section class="collage">
+      <div class="collage-item">
+        <img
+          src="/images/img-1.jpg"
+          alt="Little Eagle Football & Cheer players and cheerleaders"
+          width="960"
+          height="960"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+      <div class="collage-item">
+        <img
+          src="/images/img-2.jpg"
+          alt="Little Eagle Football & Cheer players and cheerleaders"
+          width="960"
+          height="768"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+      <div class="collage-item">
+        <img
+          src="/images/img-3.jpg"
+          alt="Little Eagle Football & Cheer players and cheerleaders"
+          width="960"
+          height="960"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    </section>
+  </main>
+</Base>

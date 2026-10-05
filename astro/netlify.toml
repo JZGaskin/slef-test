@@ -1,0 +1,93 @@
+# Little Eagle Football & Cheer — Netlify build config (Astro).
+# This file is part of the rebuild and is NOT applied to the live site until a
+# cutover is approved. The live site is a plain static deploy of the old repo.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Pin the Node major so a change to Netlify's default cannot silently break the build.
+  NODE_VERSION = "22"
+
+# --- URL parity -------------------------------------------------------------
+# No real page URL changes. These rules only make the canonical form explicit
+# (the current site relies on Netlify's Pretty URLs to rewrite *.html), and add
+# short aliases for the paths families are most likely to type or be given.
+
+[[redirects]]
+  from = "/index.html"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/pages/about.html"
+  to = "/pages/about"
+  status = 301
+
+[[redirects]]
+  from = "/pages/register.html"
+  to = "/pages/register"
+  status = 301
+
+[[redirects]]
+  from = "/pages/fields.html"
+  to = "/pages/fields"
+  status = 301
+
+[[redirects]]
+  from = "/pages/contact.html"
+  to = "/pages/contact"
+  status = 301
+
+[[redirects]]
+  from = "/pages/physical.html"
+  to = "/pages/physical"
+  status = 301
+
+[[redirects]]
+  from = "/pages/thankyou.html"
+  to = "/pages/thankyou"
+  status = 301
+
+# Short aliases (these paths currently 404 on the live site).
+[[redirects]]
+  from = "/about"
+  to = "/pages/about"
+  status = 301
+
+[[redirects]]
+  from = "/register"
+  to = "/pages/register"
+  status = 301
+
+[[redirects]]
+  from = "/fields"
+  to = "/pages/fields"
+  status = 301
+
+[[redirects]]
+  from = "/contact"
+  to = "/pages/contact"
+  status = 301
+
+[[redirects]]
+  from = "/physical"
+  to = "/pages/physical"
+  status = 301
+
+[[redirects]]
+  from = "/thankyou"
+  to = "/pages/thankyou"
+  status = 301
+
+# --- Draft / branch deploys must never be indexed ---------------------------
+# Netlify already sends `X-Robots-Tag: noindex` on branch deploys and Deploy
+# Previews. When the deploy IS built by Netlify these contexts also bake the
+# noindex meta tag (and a disallow-all robots.txt) into the HTML. The production
+# context does not set this variable, so production output is unchanged.
+[context.deploy-preview.environment]
+  PUBLIC_NOINDEX = "true"
+
+[context.branch-deploy.environment]
+  PUBLIC_NOINDEX = "true"

@@ -62,7 +62,17 @@ eq('no redirect loop exists in the map', findRedirectLoops(rules), []);
 
 // The homepage must still carry the anchors the navigation links to — the retired
 // URLs now land on `/`, so the anchors are the only way to reach those sections.
-const home = fs.readFileSync(path.join(ROOT, 'src/pages/index.astro'), 'utf8');
+//
+// This asserts against the BUILT page when one exists, not the source file. The
+// compositional reset renders the programme anchors from a data array
+// (`id={item.id}`), so a source-level grep for `id="football"` would fail while the
+// shipped page is perfectly correct — a test that asserts a FORM rather than the
+// platform's semantics. The artifact is what a visitor receives.
+const builtHome = path.join(ROOT, 'build/dist-prod/index.html');
+const home = fs.existsSync(builtHome)
+  ? fs.readFileSync(builtHome, 'utf8')
+  : fs.readFileSync(path.join(ROOT, 'src/pages/index.astro'), 'utf8');
+console.log(`  using ${fs.existsSync(builtHome) ? 'build/dist-prod/index.html' : 'src/pages/index.astro'} for the anchor checks`);
 for (const id of ['about', 'fields', 'football', 'cheer', 'register']) {
   eq(`the homepage still defines #${id}`, new RegExp(`id="${id}"`).test(home), true);
 }

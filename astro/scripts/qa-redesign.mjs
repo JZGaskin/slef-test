@@ -303,41 +303,54 @@ async function structureChecks() {
           ctaFg: ctaCs?.color ?? null,
           ctaHeight: cta ? Math.round(cta.getBoundingClientRect().height) : 0,
           ctaHeights,
-          cardRadius: cs('.card', 'borderRadius'),
-          cardBorder: cs('.card', 'borderStyle'),
+          // The homepage no longer carries a `.card` (the compositional reset dropped the
+          // programme cards). The rounded, hairline-bordered primitive on the page is now the
+          // registration action tile, so that is what the design-system check measures.
+          cardRadius: cs('.action', 'borderRadius'),
+          cardBorder: cs('.action', 'borderStyle'),
           ledeMaxWidth: cs('.lede', 'maxWidth'),
           lineHeightBody: cs('body', 'lineHeight'),
-          // The hero band is capped at the tallest the 960x572 source can be shown at
-          // full height without upscaling. If the text panel ever needed more room than
-          // that, the band would be raised to fit it — and the photograph would start
-          // being stretched. So the panel's fit is asserted, not assumed.
+          // COMPOSITIONAL RESET: the hero is a full-bleed photographic band with the copy over
+          // it. The picture is absolutely positioned behind the content, so its box IS the band
+          // by construction; what must be asserted is that the two really coincide, that the
+          // text stays inside the band, and that the copy sits on a deliberately heavy scrim
+          // (a light scrim over a photograph is how a hero silently fails AA).
           heroBand: (() => {
-            const s = document.querySelector('.stage-hero');
+            const s = document.querySelector('.hero');
             return s ? Math.round(s.getBoundingClientRect().height) : 0;
           })(),
           heroPanelFits: (() => {
-            const p = document.querySelector('.stage-hero__panel');
-            if (!p) return false;
-            return p.scrollHeight <= p.clientHeight + 2;
+            const p = document.querySelector('.hero__panel');
+            const b = document.querySelector('.hero');
+            if (!p || !b) return false;
+            const pr = p.getBoundingClientRect();
+            const br = b.getBoundingClientRect();
+            return pr.top >= br.top - 2 && pr.bottom <= br.bottom + 2 && pr.height > 0;
           })(),
           heroPanelOverflow: (() => {
-            const p = document.querySelector('.stage-hero__panel');
-            if (!p) return 0;
-            return Math.max(0, p.scrollHeight - p.clientHeight);
+            const p = document.querySelector('.hero__panel');
+            const b = document.querySelector('.hero');
+            if (!p || !b) return 0;
+            return Math.max(0, Math.round(p.getBoundingClientRect().bottom - b.getBoundingClientRect().bottom));
           })(),
-          heroImgFullHeight: (() => {
-            const m = document.querySelector('.stage-hero__media');
-            const i = document.querySelector('.stage-hero__media img');
-            const band = document.querySelector('.stage-hero');
-            if (!m || !i || !band) return 'n/a (stacked layout)';
-            // Only meaningful in the two-column desktop layout; on phones the photo
-            // is a block at the top of the band by design.
-            if (m.getBoundingClientRect().width < 500) return 'n/a (stacked layout)';
-            const mh = m.getBoundingClientRect().height;
-            const ih = i.getBoundingClientRect().height;
-            const bh = band.getBoundingClientRect().height;
-            return Math.abs(mh - ih) < 2 && Math.abs(bh - mh) <= 2 ? 'yes' : `no (band ${Math.round(bh)}, media ${Math.round(mh)}, img ${Math.round(ih)})`;
+          heroMediaCovers: (() => {
+            const band = document.querySelector('.hero');
+            const media = document.querySelector('.hero__media');
+            const img = document.querySelector('.hero__media img');
+            if (!band || !media || !img) return 'no hero media';
+            const b = band.getBoundingClientRect();
+            const m = media.getBoundingClientRect();
+            const i = img.getBoundingClientRect();
+            const fit = getComputedStyle(img).objectFit;
+            return Math.abs(m.width - b.width) < 2 && Math.abs(m.height - b.height) < 2 && Math.abs(i.height - b.height) < 2 && fit === 'cover'
+              ? 'yes'
+              : `no (band ${Math.round(b.width)}x${Math.round(b.height)}, media ${Math.round(m.width)}x${Math.round(m.height)}, img h ${Math.round(i.height)}, fit ${fit})`;
           })(),
+          heroScrim: (() => {
+            const s = document.querySelector('.hero__scrim');
+            return s ? getComputedStyle(s).backgroundImage : null;
+          })(),
+          pageHeight: Math.round(document.documentElement.scrollHeight),
         };
       })(),
     };
@@ -376,14 +389,23 @@ async function structureChecks() {
     `heights ${d.ctaHeights.join(', ')}px (WCAG 2.5.8 AA needs 24px; the design rule is 44px, with a 40px compact header variant)`);
   check('design', 'cards use the hairline-border treatment (no heavy shadow)', /solid/.test(d.cardBorder) && parseFloat(d.cardRadius) >= 10, `${d.cardRadius} ${d.cardBorder}`);
   check('design', 'long-form lines are capped for readability', parseFloat(d.ledeMaxWidth) <= 900, d.ledeMaxWidth);
-  // The photographic hero: the band exists, its text is not clipped, and the picture
-  // fills the band rather than sitting in a frame inside it.
-  check('design', 'the hero band is a real photographic band, not a collapsed block',
-    d.heroBand >= 420 && d.heroBand <= 580, `${d.heroBand}px (source caps a full-height photo at 572px)`);
-  check('design', 'the hero text panel fits inside the band (nothing clipped)', d.heroPanelFits,
-    `overflow ${d.heroPanelOverflow}px`);
-  check('design', 'the hero photograph fills the band edge to edge', d.heroImgFullHeight === 'yes',
-    String(d.heroImgFullHeight));
+  // The photographic hero: the band exists, the text is inside it, the picture fills it,
+  // and the copy sits on a heavy scrim. The mock-up's hero is roughly three-quarters of
+  // the first screen, so the band is asserted to be generous — not a collapsed block.
+  check('design', 'the hero is a dominant photographic band',
+    d.heroBand >= 480 && d.heroBand <= 800, `${d.heroBand}px at 1440x900`);
+  check('design', 'the hero copy stays inside the band (nothing clipped)', d.heroPanelFits,
+    `panel bottom ${d.heroPanelOverflow}px past the band`);
+  check('design', 'the hero photograph fills the band edge to edge', d.heroMediaCovers === 'yes',
+    String(d.heroMediaCovers));
+  check('design', 'the hero copy sits on a deliberately heavy scrim (AA over a photograph)',
+    /rgba\(10, 10, 12, 0\.9/.test(String(d.heroScrim)),
+    String(d.heroScrim).slice(0, 120));
+  // The compositional reset exists to make the page shorter. The previous long-form
+  // homepage was 5534px at 1440x900; the mock-up's rhythm is hero → strip → mission →
+  // registration → compact utilities → footer, so the whole page should now be far shorter.
+  check('homepage', 'the homepage is compact (compositional reset, not a long scroll)',
+    d.pageHeight <= 3800, `${d.pageHeight}px at 1440x900 (the previous long-form homepage was 5534px)`);
 
   // heading order must not skip a level
   let prev = 0;
@@ -399,7 +421,7 @@ async function structureChecks() {
   // scaling the file up. It therefore gets a named allowance that is still < 1.0 —
   // i.e. it too is never upscaled — because object-fit: cover rounds the crop up at
   // some viewports. Everything else keeps the tight 1.02 rule.
-  const HERO_ALLOWANCE = { 'hero-cover.jpg': 1.0 };
+  const HERO_ALLOWANCE = { 'football-hero.jpg': 1.0, 'hero-cover.jpg': 1.0, 'hero-cover-640.jpg': 1.0 };
   const allowanceFor = (i) => HERO_ALLOWANCE[(i.currentSrc || i.src || '').split('/').pop()];
   const upscaled = info.imgs.filter((i) => i.scale > (allowanceFor(i) ?? 1.02));
   check('images', 'no image is displayed larger than its native pixels (1440px)', upscaled.length === 0,
@@ -432,15 +454,14 @@ async function responsiveChecks() {
         m.scrollWidth <= m.innerWidth + 1,
         `scrollWidth ${m.scrollWidth} vs ${m.innerWidth}; widest ${m.widest?.tag} right=${Math.round(m.widest?.w ?? 0)}`);
     }
-    // The hero must not be clipped at ANY measured width. The band caps the
-    // photograph at the height the source can carry, so if the text ever needed more
-    // room than that, the band would silently cut it — this is the check that catches
-    // it, at every viewport rather than only the widest one.
+    // The hero must not be clipped at ANY measured width, and the copy must stay inside the
+    // band. The band is a full-bleed photographic field sized by `min-height`, so if the copy
+    // ever grew past it the text would be cut — this catches that at every viewport.
     await goto('/');
     const hero = await page.evaluate(() => {
-      const band = document.querySelector('.stage-hero');
-      const media = document.querySelector('.stage-hero__media');
-      const panel = document.querySelector('.stage-hero__panel');
+      const band = document.querySelector('.hero');
+      const media = document.querySelector('.hero__media');
+      const panel = document.querySelector('.hero__panel');
       if (!band || !media || !panel) return null;
       const b = band.getBoundingClientRect();
       const m = media.getBoundingClientRect();
@@ -449,13 +470,15 @@ async function responsiveChecks() {
         band: Math.round(b.height),
         media: Math.round(m.height),
         panel: Math.round(p.height),
+        panelTop: Math.round(p.top),
         panelBottom: Math.round(p.bottom),
+        bandTop: Math.round(b.top),
         bandBottom: Math.round(b.bottom),
       };
     });
-    const clipped = hero.panel > hero.band + 2 || hero.panelBottom > hero.bandBottom + 2 || hero.media > hero.band + 2;
+    const clipped = hero.panelBottom > hero.bandBottom + 2 || hero.panelTop < hero.bandTop - 2 || Math.abs(hero.media - hero.band) > 2;
     check('responsive', `the hero is not clipped at ${vp.name}`, !clipped,
-      `band ${hero.band} / media ${hero.media} / panel ${hero.panel}`);
+      `band ${hero.band} / media ${hero.media} / panel ${hero.panel} (top ${hero.panelTop} vs ${hero.bandTop})`);
 
     // Image scale at THIS viewport. The browser chooses a srcset candidate by width,
     // so a near-square box can outgrow the file it was handed even though a wider
@@ -484,7 +507,7 @@ async function responsiveChecks() {
         return { src: (i.currentSrc || '').split('/').pop(), scale: Number(scale.toFixed(3)) };
       }).filter(Boolean);
     });
-    const HERO_ALLOWANCE = { 'hero-cover.jpg': 1.0, 'hero-cover-640.jpg': 1.0 };
+    const HERO_ALLOWANCE = { 'football-hero.jpg': 1.0, 'hero-cover.jpg': 1.0, 'hero-cover-640.jpg': 1.0 };
     const bad = scales.filter((s) => s.scale > (HERO_ALLOWANCE[s.src] ?? 1.02));
     check('responsive', `no image is upscaled at ${vp.name}`, bad.length === 0,
       bad.length ? bad.map((b) => `${b.src} ${b.scale}x`).join(', ') : scales.map((s) => `${s.src} ${s.scale}x`).join(', '));
@@ -627,7 +650,7 @@ async function perfChecks() {
   });
   check('perf', `homepage transfer is under ${WEIGHT_BUDGET_KB} KB`, perf.totalKB <= WEIGHT_BUDGET_KB, `${perf.totalKB} KB (${JSON.stringify(perf.byType)})`);
   const imgBytes = networkLog.filter((r) => r.type === 'image' && r.url.startsWith(BASE));
-  const heroBytes = imgBytes.filter((r) => /hero-cover/.test(r.url));
+  const heroBytes = imgBytes.filter((r) => /football-hero/.test(r.url));
   const totalImg = imgBytes.reduce((a, r) => a + r.len, 0) / 1024;
   check('perf', `the hero image is under ${HERO_BUDGET_KB} KB`, heroBytes.every((r) => r.len / 1024 <= HERO_BUDGET_KB), heroBytes.map((r) => `${r.url.split('/').pop()} ${Math.round(r.len / 1024)}KB`).join(', '));
   check('perf', 'all homepage imagery is under 500 KB', totalImg <= 500, `${Math.round(totalImg)} KB across ${imgBytes.length} images`);

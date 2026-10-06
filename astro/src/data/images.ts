@@ -27,14 +27,32 @@
 //   4. delete the entry from `REJECTED_ASSETS` if it was listed there.
 // No component changes. No copy changes. One data file.
 //
+// THE HERO AND `previewUpscale` (read this before judging the hero's sharpness)
+// ----------------------------------------------------------------------------
+// The strongest HUMAN sports photograph the organization's public page yields is
+// 960x540. The approved mock-up's hero is a large photographic field, and the
+// design-review instruction is explicit that visual suitability outranks perfect
+// source resolution for the PRIVATE preview — while also saying not to upscale
+// irresponsibly, and not to let the resolution rule force a weak distant-field
+// photograph into the hero.
+//
+// So the upscale is DECLARED rather than hidden: `football-hero.jpg` is a one-time
+// 1.667x Lanczos3 resample of that 960x540 frame to 1600x900, and `previewUpscale`
+// records the factor on the asset. Two consequences, both intended:
+//   * the browser never upscales it (the rendered QA asserts scale <= 1.0 at every
+//     measured viewport, because the file now covers a full-bleed band up to
+//     1600px wide at 1:1), and
+//   * the asset is still `temporary-facebook-asset`, so the promotion gate refuses
+//     it exactly as before. A resampled web copy is not a licensed original.
+// The clean fix remains the same: one 1600px+ original from the organization.
+//
 // SUBJECT VERIFICATION
 // --------------------
 // `subjectVerified` records that the CONTENT of the picture was actually
-// inspected rather than assumed. From the visual-refinement pass onward this is
-// done by describing every candidate with a local vision-language model
-// (`vision/descriptions.json`) before it is selected, so `alt` describes what the
-// photograph really shows instead of a generic placeholder. `verifiedBy` names
-// the method. Approval (licensing) is a separate question and stays
+// inspected rather than assumed. Every candidate was described with a local
+// vision-language model (`vision/descriptions.json`) before it was selected, so
+// `alt` describes what the photograph really shows instead of a generic
+// placeholder. Approval (licensing) is a separate question and stays
 // `temporary-facebook-asset` until the organization approves in writing.
 
 export interface ImageVariant {
@@ -60,18 +78,53 @@ export interface ImageAsset {
   subjectVerified: boolean;
   verifiedBy: string;
   credit: string;
+  /**
+   * Present ONLY on the hero: the declared, one-time resample factor of the web
+   * copy this file was produced from. Absent means the file is as-captured.
+   */
+  previewUpscale?: number;
 }
 
 const FB_CREDIT = 'Somerset Little Eagle Football official Facebook page';
 const VISION = 'local vision-language model (gemma4:12b); description recorded in vision/descriptions.json';
 
 export const IMAGES: Record<string, ImageAsset> = {
-  // HERO — the widest usable frame (960x572; the source offers no larger copy),
-  // a night game with "EAGLES" in the end zones, players on the turf and
-  // spectators behind the fence. Chosen for a hero because it has real negative
-  // space (turf left and right, sky and lights above) and reads as game day.
-  heroCover: {
-    id: 'heroCover',
+  // HERO — the club's own players, in the club's black-and-orange uniforms, on the
+  // field with a crowd and a tent behind them. This is the only full-resolution
+  // frame the public page yields that is unmistakably this organization AND
+  // recognisably football being played, so it is the emotional image the approved
+  // mock-up calls for. (The previous hero was a distant night field panorama — it
+  // is now the mission image, where distance reads as "where we play".)
+  footballHero: {
+    id: 'footballHero',
+    src: '/images/redesign/football-hero.jpg',
+    width: 1600,
+    height: 900,
+    // NO downscaled variant, deliberately. srcset selects by WIDTH, so on a phone the
+    // browser would take a 800x450 file for a 390x574 band and then cover-scale it to
+    // 1.28x — a real upscale, in the exact place the design is most photographic. The
+    // hero therefore declares one candidate only: the 1600x900 file, which covers a
+    // full-bleed band up to 1600px wide at 1:1 and crops rather than enlarging on
+    // phones. The cost is that a phone downloads the hero in full; the benefit is that
+    // "the hero is never displayed above its own pixels" is true at EVERY viewport,
+    // not just the ones the QA happens to measure.
+    variants: [],
+    alt: 'Young Little Eagle football players in black and orange uniforms on the grass at the field, with a crowd and a tent behind them.',
+    source: 'facebook-page',
+    fbid: '1429402305252657',
+    context: 'the organization’s Facebook photo (page photos / About), captured 2026-10-05',
+    status: 'temporary-facebook-asset',
+    subjectVerified: true,
+    verifiedBy: VISION,
+    credit: FB_CREDIT,
+    previewUpscale: 1.667,
+  },
+  // MISSION — a night game on the home field, "EAGLES" in the end zones, players on
+  // the turf and spectators behind the fence. Used small and beside copy, where the
+  // distance of the frame reads as "this is where we play" rather than as the
+  // emotional lead image.
+  fieldNight: {
+    id: 'fieldNight',
     src: '/images/redesign/hero-cover.jpg',
     width: 960,
     height: 572,
@@ -80,26 +133,6 @@ export const IMAGES: Record<string, ImageAsset> = {
     source: 'facebook-page',
     fbid: '1457013789796532',
     context: 'the organization’s page cover photo (set a.553052540192666)',
-    status: 'temporary-facebook-asset',
-    subjectVerified: true,
-    verifiedBy: VISION,
-    credit: FB_CREDIT,
-  },
-
-  // FOOTBALL PROGRAM CARD — young players in the club's black-and-orange uniforms,
-  // on the field at an event, with a crowd and a tent behind them. Unmistakably
-  // this organization and unmistakably football. (It replaced a night street scene
-  // that had been assigned to this slot without the content ever being checked.)
-  footballPlayers: {
-    id: 'footballPlayers',
-    src: '/images/redesign/football-players.jpg',
-    width: 960,
-    height: 540,
-    variants: [{ src: '/images/redesign/football-players-640.jpg', width: 640 }],
-    alt: 'Young Little Eagle football players in black and orange uniforms on the grass at the field, with a crowd and a tent behind them.',
-    source: 'facebook-page',
-    fbid: '1429402305252657',
-    context: 'the organization’s Facebook photo (page photos / About), captured 2026-10-05',
     status: 'temporary-facebook-asset',
     subjectVerified: true,
     verifiedBy: VISION,
@@ -135,7 +168,7 @@ export const IMAGES: Record<string, ImageAsset> = {
  * treats it exactly like an unapproved photograph — the build cannot be promoted
  * while one exists. That is deliberate: the honest alternatives were to publish a
  * photograph of something else under a "Cheer" heading, or to publish nothing and
- * let the second program card look broken. Neither is acceptable.
+ * let the cheer item look broken. Neither is acceptable.
  */
 export interface Placeholder {
   id: string;
@@ -149,7 +182,7 @@ export const PLACEHOLDERS: Placeholder[] = [
     id: 'cheerMedia',
     label: 'Cheer',
     reason:
-      'No cheer photograph exists in the captured source. Every full-resolution image on the organization’s public Facebook page that could be retrieved is American football; the only recent daylight action photographs are 160x160 thumbnails, which are unusable at card size. Assigning a football or street image to the Cheer card would have been a false description of the programme.',
+      'No cheer photograph exists in the captured source. Every full-resolution image on the organization’s public Facebook page that could be retrieved is American football; the only recent daylight action photographs are 160x160 thumbnails, which are unusable at card size. Assigning a football or street image to the Cheer item would have been a false description of the programme.',
     needs:
       'One or two cheer photographs (sideline or competition) from the organization, at 1200px or larger, with permission to publish.',
   },
@@ -160,12 +193,12 @@ export const REJECTED_ASSETS = [
   {
     fbid: '1794831097925531',
     reason:
-      'THE DEFECT THIS PASS FIXED: this night street scene — buildings, cars, dark storefronts, zero people — had been assigned to the Football program card on the strength of its filename alone. A vision-language description shows no sport and no people in frame. Removed from the page and from the bundle.',
+      'A night street scene — buildings, cars, dark storefronts, zero people — that had been assigned to the Football program card on the strength of its filename alone. A vision-language description showed no sport and no people in frame. Removed from the page and from the bundle.',
   },
   {
     fbid: '26508028338804198',
     reason:
-      'Team photograph with large baked-in text ("Great season Little Eagles!"). It reads as a reposted social graphic rather than photography, and the text duplicates the heading beside it. Used on the previous build’s community section; removed from the page and from the bundle.',
+      'Team photograph with large baked-in text ("Great season Little Eagles!"). It reads as a reposted social graphic rather than photography, and the text duplicates the heading beside it. Removed from the page and from the bundle.',
   },
   {
     fbid: '1536589455172298',
@@ -175,7 +208,7 @@ export const REJECTED_ASSETS = [
   {
     fbid: '8 daylight action frames (1536366505194593 … 1536366531861257)',
     reason:
-      'Genuine youth football action frames, but the only copies retrievable without a logged-in session are 160x160 thumbnails. Far too small for a card (a card needs ~600px); using them would have meant a 3.75x upscale. They are recorded here so a future pass with the original files knows they exist.',
+      'Genuine youth football action frames, but the only copies retrievable without a logged-in session are 160x160 thumbnails. Far too small for the hero or a card. Recorded here so a future pass WITH the originals knows they exist — one of these is the single best candidate to replace the declared hero upscale.',
   },
   {
     fbid: 'SLEFLogo5.png',
@@ -192,5 +225,8 @@ export const REJECTED_ASSETS = [
 export const TEMPORARY_COUNT = Object.values(IMAGES).filter(
   (i) => i.status === 'temporary-facebook-asset',
 ).length;
+
+/** Declared preview upscales, reported by the review build so the number is never hidden. */
+export const PREVIEW_UPSCALES = Object.values(IMAGES).filter((i) => i.previewUpscale);
 
 export const PLACEHOLDER_COUNT = PLACEHOLDERS.length;

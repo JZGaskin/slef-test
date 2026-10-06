@@ -1,4 +1,23 @@
 ---
+// HOMEPAGE — the compositional reset.
+//
+// The approved mock-up is the visual authority for this page, not the previous
+// homepage. Composition, band rhythm and the amount of scrolling are all set by
+// that reference:
+//
+//   hero (dominant human sports photograph, copy over a dark scrim)
+//   → quick program/value strip
+//   → compact mission (white, one photograph)
+//   → dark registration band (the strongest section on the page)
+//   → compact parent-resource strip
+//   → fields (home field prominent, directory folded)
+//   → compact community / Facebook block
+//   → footer
+//
+// Protected functionality is unchanged: the same MachForm embeds, the same
+// thank-you path, the same redirects, the same anchors (#football, #cheer,
+// #about, #register, #resources, #fields) so the navigation and the forced 301s
+// from the retired pages keep working.
 import Base from '../layouts/Base.astro';
 import AppImage from '../components/AppImage.astro';
 import {
@@ -6,12 +25,35 @@ import {
   VENUES,
   SAFETY_LINKS,
   PLAYER_EXPECTATIONS,
-  REGISTER_CTA,
   FACEBOOK_ICON_PATH,
 } from '../data/site';
 
 const home = VENUES.find((v) => v.home) ?? VENUES[0];
 const away = VENUES.filter((v) => v !== home);
+const REGISTER = '/register';
+const PROGRAM_ITEMS = [
+  {
+    id: 'football',
+    title: 'Youth Football',
+    copy: `Tackle football teams at grade levels ${SITE.grades}, playing in the ${SITE.leagueShort}. Fundamentals, safety and teamwork first.`,
+    href: REGISTER,
+    link: 'Register for football',
+  },
+  {
+    id: 'cheer',
+    title: 'Cheer Program',
+    copy: `${SITE.programNote} It runs alongside football in the same ${SITE.season} season.`,
+    href: REGISTER,
+    link: 'Register for cheer',
+  },
+  {
+    id: 'volunteers',
+    title: 'All-Volunteer',
+    copy: 'Every coach, officer and team parent is a volunteer. That is the whole organization.',
+    href: '/contact',
+    link: 'Get involved',
+  },
+];
 ---
 
 <Base
@@ -20,218 +62,134 @@ const away = VENUES.filter((v) => v !== home);
   active="home"
 >
   <main id="main">
-    <!-- 1. HERO -------------------------------------------------------------
-         Photo-led: a full-height image column that bleeds to the right edge, so
-         the photograph is the largest element on the first screen. The image
-         column is sized to stay at or under its native 960px, so "full-bleed"
-         never means "upscaled" — see the note at the top of redesign.css. On
-         phones the photo leads and a gradient welds it into the ink panel below. -->
-    <section class="stage-hero">
-      <div class="stage-hero__inner">
-        <div class="stage-hero__panel">
+    <!-- 1. HERO ============================================================
+         One large human sports photograph with the copy over it. The picture is
+         absolutely positioned behind the content, so the text can never stretch
+         it, and the file itself is a declared 1.667x resample so the browser
+         never displays it above its own pixels (see src/data/images.ts). -->
+    <section class="hero" id="top">
+      <div class="hero__media">
+        <AppImage id="footballHero" loading="eager" fetchpriority="high" sizes="100vw" position="50% 40%" />
+      </div>
+      <div class="hero__scrim" aria-hidden="true"></div>
+      <div class="wrap hero__inner">
+        <div class="hero__panel">
           <p class="eyebrow">{SITE.league}</p>
           <h1>Somerset Little Eagle Football</h1>
-          <p class="stage-hero__lead">
-            Youth football and cheer in Somerset, Pennsylvania.
+          <p class="hero__lead">
+            Developmental youth football and cheer in Somerset, Pennsylvania — a season
+            built by the families who show up for it.
           </p>
-          <div class="btn-row">
-            <a class="btn btn--primary btn--lg" href={REGISTER_CTA.href}>
-              Register for the 2026 season
-            </a>
-            <a class="btn btn--onDark" href="#football">Our programs</a>
-          </div>
-          <ul class="facts">
-            <li><strong>{SITE.grades}</strong>Grade levels</li>
-            <li><strong>Aug – Oct</strong>Season</li>
-            <li><strong>{SITE.leagueShort}</strong>League</li>
-            <li><strong>All-volunteer</strong>Organization</li>
+          <ul class="hero__meta">
+            <li>Grades {SITE.grades}</li>
+            <li>{SITE.season}</li>
+            <li>{SITE.leagueShort}</li>
           </ul>
-        </div>
-        <div class="stage-hero__media">
-          <AppImage
-            id="heroCover"
-            loading="eager"
-            fetchpriority="high"
-            sizes="(min-width: 900px) 900px, 100vw"
-            position="50% 55%"
-          />
+          <div class="btn-row">
+            <a class="btn btn--primary btn--lg" href={REGISTER}>Register for the 2026 season</a>
+            <a class="btn btn--light" href="#programs">Explore programs</a>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- 2. PROGRAMS ---------------------------------------------------------
-         Two balanced cards. The Football card carries real football photography
-         in the club's own colours; the Cheer card carries a DECLARED placeholder
-         because no cheer photograph exists with permission to publish — the
-         production gate refuses to promote a build while it is present. -->
-    <section class="section" id="football">
+    <!-- 2. QUICK PROGRAM / VALUE STRIP ==================================== -->
+    <section class="strip" id="programs" aria-labelledby="programs-heading">
       <div class="wrap">
-        <div class="section-head">
-          <p class="eyebrow">What we offer</p>
-          <h2>Two programs, one organization</h2>
-          <p class="lede">
-            Football and cheer are both part of {SITE.name}, and both run in the same
-            {SITE.season} season.
-          </p>
+        <h2 id="programs-heading" class="sr-only">Programs and community</h2>
+        <div class="strip__grid">
+          {PROGRAM_ITEMS.map((item) => (
+            <article class="strip__item" id={item.id}>
+              <h3>{item.title}</h3>
+              <p>{item.copy}</p>
+              <a href={item.href}>{item.link}</a>
+              {item.id === 'cheer' && (
+                <span
+                  class="ph-bar"
+                  data-asset-status="temporary-placeholder"
+                  data-asset-id="cheerMedia"
+                  data-asset-note="No cheer photograph exists with permission to publish; this is a declared placeholder and it blocks promotion."
+                >
+                  <span class="ph-bar__label">Cheer</span>
+                  <span class="ph-bar__note">Photography to come</span>
+                </span>
+              )}
+            </article>
+          ))}
         </div>
-        <span class="slash" aria-hidden="true"></span>
-
-        <div class="program-grid">
-          <article class="card card--program">
-            <div class="card__media">
-              <AppImage
-                id="footballPlayers"
-                sizes="(min-width: 840px) 44vw, 100vw"
-                position="50% 40%"
-              />
-            </div>
-            <div class="card__body">
-              <p class="card__tag">Program</p>
-              <h3>Football</h3>
-              <p>
-                Tackle football teams at grade levels {SITE.grades}, playing in the
-                {SITE.league} ({SITE.leagueShort}). Coaches are focused on fundamentals,
-                safety and teamwork.
-              </p>
-              <a class="link-arrow" href={REGISTER_CTA.href}>Register for football</a>
-            </div>
-          </article>
-
-          <article class="card card--program" id="cheer">
-            <div
-              class="card__media card__media--placeholder"
-              data-asset-status="temporary-placeholder"
-              data-asset-id="cheerMedia"
-              data-asset-note="No cheer photograph exists with permission to publish; this panel is a declared placeholder and blocks promotion."
-            >
-              <span class="ph__label">Cheer</span>
-              <span class="ph__rule" aria-hidden="true"></span>
-              <span class="ph__note">Photography to come</span>
-              <span class="ph__sub">
-                We would rather show the real squad than stand in for it. Cheer photographs are
-                being collected from the organization.
-              </span>
-            </div>
-            <div class="card__body">
-              <p class="card__tag">Program</p>
-              <h3>Cheer</h3>
-              <p>
-                Cheer is a program of {SITE.name} — it runs alongside football in the same
-                {SITE.season} season, on the sidelines and in league competition.
-              </p>
-              <a class="link-arrow" href={REGISTER_CTA.href}>Register for cheer</a>
-            </div>
-          </article>
-        </div>
-
-        <p class="program-note">{SITE.programNote}</p>
       </div>
     </section>
 
-    <!-- 3. MISSION / ABOUT --------------------------------------------------
-         Matches the approved wireframe: statement plus three value tiles, no
-         photograph. (The previous build put a vertical image here, which added
-         height without adding meaning.) -->
-    <section class="section section--alt" id="about">
-      <div class="wrap">
-        <div class="section-head">
+    <!-- 3. ABOUT / MISSION =============================================== -->
+    <section class="section" id="about">
+      <div class="wrap about">
+        <div class="about__copy">
           <p class="eyebrow">About us</p>
           <h2>Built for Somerset’s young athletes</h2>
+          <p>
+            Our mission is to provide high level developmental football and cheer programs. We
+            participate in the <a href={SITE.leagueUrl} rel="noopener">{SITE.league} ({SITE.leagueShort})</a>
+            with tackle football teams at grade levels {SITE.grades}, {SITE.season}, run entirely by
+            volunteers.
+          </p>
         </div>
-
-        <div class="mission-grid">
-          <div class="prose-block">
-            <h3>Our mission</h3>
-            <p>Our mission is to provide high level developmental football and cheer programs.</p>
-            <h3>Where we play</h3>
-            <p>
-              {SITE.name} participates in the
-              <a href={SITE.leagueUrl} rel="noopener">{SITE.league} ({SITE.leagueShort})</a>. We have
-              tackle football teams at grade levels {SITE.grades} with a season beginning in August
-              and ending in October.
-            </p>
-            <h3>Volunteers</h3>
-            <p>
-              We are an all-volunteer organization, and we appreciate everyone who steps up to make
-              the season work for all involved. <a href="/contact">Get in touch</a> if you would like
-              to help.
-            </p>
-          </div>
-
-          <ul class="values">
-            <li class="value">
-              <strong>All-volunteer</strong>
-              <span>Run by volunteers who meet monthly throughout the year.</span>
-            </li>
-            <li class="value">
-              <strong>Cleared coaches</strong>
-              <span>
-                Every coach must hold recent child abuse and criminal background clearances and
-                complete concussion awareness training.
-              </span>
-            </li>
-            <li class="value">
-              <strong>Safe and positive</strong>
-              <span>A safe, positive environment for every participant.</span>
-            </li>
-          </ul>
+        <div class="about__media">
+          <AppImage id="fieldNight" sizes="(min-width: 900px) 46vw, 100vw" />
         </div>
       </div>
     </section>
 
-    <!-- 4. REGISTRATION ----------------------------------------------------- -->
-    <section class="section section--tight" id="register">
+    <!-- 4. REGISTRATION BAND ============================================= -->
+    <section class="register" id="register">
       <div class="wrap">
-        <div class="band">
-          <div>
-            <p class="eyebrow">Registration</p>
-            <h2>Register for the 2026 season</h2>
-            <p>
-              Registration is handled through our registration form. You will need your player’s
-              information and a payment method; the form shows current availability and fees.
-            </p>
-            <p class="band__note">
-              All football players must have a completed physical before the first practice. Already
-              have it? <a href="/physical">Submit it here</a>.
-            </p>
-          </div>
-          <div class="band__actions">
-            <a class="btn btn--primary btn--block" href={REGISTER_CTA.href}>Start registration</a>
-            <a class="btn btn--onDark btn--block" href="/physical">Submit a physical</a>
-          </div>
+        <div class="wrap-narrow">
+          <p class="eyebrow">Registration</p>
+          <h2>Register for the 2026 season</h2>
+          <p class="lede">
+            One form for football and cheer — it shows current availability and fees.
+          </p>
         </div>
+        <div class="register__actions">
+          <a class="action action--primary" href={REGISTER}>
+            <span class="action__label">Register for Football</span>
+            <span class="action__note">Opens the 2026 registration form</span>
+          </a>
+          <a class="action" href={REGISTER}>
+            <span class="action__label">Register for Cheer</span>
+            <span class="action__note">Same form — choose cheer as the program</span>
+          </a>
+          <a class="action" href="/physical">
+            <span class="action__label">Submit Physical</span>
+            <span class="action__note">Required before the first practice</span>
+          </a>
+        </div>
+        <p class="register__note">
+          Questions about registration? <a href="/contact">Send us a message</a> and a
+          current-season officer will get back to you.
+        </p>
       </div>
     </section>
 
-    <!-- 5. PARENT RESOURCES --------------------------------------------------
-         A deliberate 2x2. The previous 3-across layout left the fourth card
-         orphaned and looked accidental. -->
+    <!-- 5. PARENT RESOURCES (compact) ===================================== -->
     <section class="section" id="resources">
       <div class="wrap">
         <div class="section-head">
           <p class="eyebrow">Parent resources</p>
           <h2>What you’ll need before the season</h2>
-          <p class="lede">
-            The paperwork and the expectations, in one place — no need to hunt through the site.
-          </p>
         </div>
-        <span class="slash" aria-hidden="true"></span>
-
         <div class="resource-grid">
           <div class="resource">
             <h3>Physical form</h3>
-            <p>
-              All football players must have a completed physical form before the first practice.
-            </p>
+            <p>Required for every football player before the first practice.</p>
             <ul>
-              <li><a href={SITE.physicalFormPdf} rel="noopener">Download the physical form</a></li>
-              <li><a href="/physical">Submit a completed physical</a></li>
+              <li><a href={SITE.physicalFormPdf} rel="noopener">Download the form</a></li>
+              <li><a href="/physical">Submit a physical</a></li>
             </ul>
           </div>
 
           <div class="resource">
-            <h3>Coaches’ clearances &amp; safety</h3>
-            <p>Every coach is required to hold these before working with players.</p>
+            <h3>Clearances &amp; safety</h3>
+            <p>Every coach must hold these before working with players.</p>
             <ul>
               {SAFETY_LINKS.map((link) => (
                 <li><a href={link.href} rel="noopener">{link.label}</a></li>
@@ -241,13 +199,13 @@ const away = VENUES.filter((v) => v !== home);
 
           <div class="resource">
             <h3>Player expectations</h3>
-            <p>Players and families should know what the season asks of them.</p>
+            <p>What the season asks of players and families.</p>
             <details>
               <summary>Expectation of all players</summary>
               <ul>
                 {PLAYER_EXPECTATIONS.map((item) => <li>{item}</li>)}
               </ul>
-              <p style="margin-top:0.75rem">
+              <p>
                 {SITE.name}, along with the coaching staff, reserves the right to reduce playing time
                 or ask a player not to participate if any of the above expectations are not met.
               </p>
@@ -256,10 +214,7 @@ const away = VENUES.filter((v) => v !== home);
 
           <div class="resource">
             <h3>Code of conduct</h3>
-            <p>
-              A safe and fun learning environment for our youth football players and cheerleaders is
-              the expectation for everyone involved.
-            </p>
+            <p>The standard we hold everyone to, on and off the field.</p>
             <details>
               <summary>Read the code of conduct</summary>
               <p>
@@ -276,28 +231,27 @@ const away = VENUES.filter((v) => v !== home);
       </div>
     </section>
 
-    <!-- 6. FIELDS / VENUES --------------------------------------------------- -->
+    <!-- 6. FIELDS (compact) ============================================== -->
     <section class="section section--alt" id="fields">
-      <div class="wrap">
-        <div class="section-head">
-          <p class="eyebrow">Fields &amp; venues</p>
-          <h2>Where we play</h2>
-          <p class="lede">Fields and venues used during the season, with directions for each.</p>
+      <div class="wrap fields">
+        <div class="venue-home">
+          <p class="eyebrow">Home field</p>
+          <h3>{home.name}</h3>
+          <address>{home.address}</address>
+          <p>Little Eagle teams play here, along with league venues across the region.</p>
+          <a class="btn btn--primary btn--sm" href={home.map} target="_blank" rel="noopener">
+            Open in maps
+          </a>
         </div>
 
-        <div class="venue-grid">
-          <div class="venue-home">
-            <p class="eyebrow">Home field</p>
-            <h3>{home.name}</h3>
-            <address>{home.address}</address>
-            <p>Little Eagle teams play here, along with league venues across the region.</p>
-            <a class="btn btn--primary btn--sm" href={home.map} target="_blank" rel="noopener">
-              Open in maps
-            </a>
-          </div>
-
-          <div class="venue-list-panel">
-            <p class="venue-list-heading">Other league venues</p>
+        <div class="fields__more">
+          <h3>League venues &amp; directions</h3>
+          <p>
+            Away games are played at seven league venues across the region. Directions for each are
+            one tap away.
+          </p>
+          <details class="fields__details">
+            <summary>View all fields / directions</summary>
             <ul class="venue-list">
               {away.map((venue) => (
                 <li>
@@ -311,52 +265,28 @@ const away = VENUES.filter((v) => v !== home);
                 </li>
               ))}
             </ul>
-          </div>
+          </details>
         </div>
       </div>
     </section>
 
-    <!-- 7. COMMUNITY / CONTACT ----------------------------------------------
-         Photography of the team itself, with the Facebook link as supporting UI.
-         The previous build's image was a social post with large baked-in text,
-         which read as a repost rather than a website. -->
+    <!-- 7. COMMUNITY ===================================================== -->
     <section class="section" id="community">
-      <div class="wrap">
-        <div class="section-head">
+      <div class="wrap community">
+        <div class="community__media">
+          <AppImage id="communityField" sizes="(min-width: 860px) 520px, 100vw" />
+        </div>
+        <div class="community__copy">
           <p class="eyebrow">Community</p>
           <h2>Follow the season</h2>
-          <p class="lede">
-            News, photos and updates are posted on the organization’s Facebook page throughout the
-            season.
+          <p>
+            News, photos and schedule updates are posted on the organization’s Facebook page
+            throughout the season.
           </p>
-        </div>
-
-        <div class="community-grid">
-          <div class="portrait">
-            <AppImage id="communityField" sizes="(min-width: 840px) 46vw, 100vw" />
-          </div>
-          <div>
-            <div class="contact-card">
-              <h3>Follow on Facebook</h3>
-              <p>
-                {SITE.name} posts game days, photos and schedule updates on Facebook. It is the
-                fastest way to see what is happening.
-              </p>
-              <a class="fb-link" href={SITE.facebook} target="_blank" rel="noopener">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" aria-hidden="true"><path d={FACEBOOK_ICON_PATH}></path></svg>
-                Somerset Little Eagle Football
-              </a>
-            </div>
-            <div class="contact-card" style="margin-top:1rem">
-              <h3>Questions?</h3>
-              <p>
-                Send us a message and a current-season officer will get back to you.
-              </p>
-              <div class="btn-row">
-                <a class="btn btn--outline" href="/contact">Send us a message</a>
-              </div>
-            </div>
-          </div>
+          <a class="fb-link" href={SITE.facebook} target="_blank" rel="noopener">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" aria-hidden="true"><path d={FACEBOOK_ICON_PATH}></path></svg>
+            Somerset Little Eagle Football
+          </a>
         </div>
       </div>
     </section>

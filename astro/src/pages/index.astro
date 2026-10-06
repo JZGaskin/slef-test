@@ -20,22 +20,25 @@ const away = VENUES.filter((v) => v !== home);
   active="home"
 >
   <main id="main">
-    <!-- 1. HERO ------------------------------------------------------------
-         Deliberately a split hero rather than a full-bleed 100vw photograph:
-         the only current wide image is 960px, and a split layout displays it at
-         or below its native size. Nothing on this site is upscaled. -->
+    <!-- 1. HERO -------------------------------------------------------------
+         Photo-led: a full-height image column that bleeds to the right edge, so
+         the photograph is the largest element on the first screen. The image
+         column is sized to stay at or under its native 960px, so "full-bleed"
+         never means "upscaled" — see the note at the top of redesign.css. On
+         phones the photo leads and a gradient welds it into the ink panel below. -->
     <section class="stage-hero">
-      <div class="wrap stage-hero__grid">
+      <div class="stage-hero__inner">
         <div class="stage-hero__panel">
           <p class="eyebrow">{SITE.league}</p>
-          <h1>Somerset Little&nbsp;Eagle Football</h1>
+          <h1>Somerset Little Eagle Football</h1>
           <p class="stage-hero__lead">
-            Youth football and cheer for Somerset, Pennsylvania. Tackle football at grade levels
-            {SITE.grades}, with a season that runs {SITE.season}.
+            Youth football and cheer in Somerset, Pennsylvania.
           </p>
           <div class="btn-row">
-            <a class="btn btn--primary" href={REGISTER_CTA.href}>Register for the 2026 season</a>
-            <a class="btn btn--onDark" href="#football">Explore our programs</a>
+            <a class="btn btn--primary btn--lg" href={REGISTER_CTA.href}>
+              Register for the 2026 season
+            </a>
+            <a class="btn btn--onDark" href="#football">Our programs</a>
           </div>
           <ul class="facts">
             <li><strong>{SITE.grades}</strong>Grade levels</li>
@@ -49,14 +52,18 @@ const away = VENUES.filter((v) => v !== home);
             id="heroCover"
             loading="eager"
             fetchpriority="high"
-            sizes="(min-width: 900px) 46vw, 100vw"
-            position="50% 40%"
+            sizes="(min-width: 900px) 900px, 100vw"
+            position="50% 55%"
           />
         </div>
       </div>
     </section>
 
-    <!-- 2. PROGRAMS -------------------------------------------------------- -->
+    <!-- 2. PROGRAMS ---------------------------------------------------------
+         Two balanced cards. The Football card carries real football photography
+         in the club's own colours; the Cheer card carries a DECLARED placeholder
+         because no cheer photograph exists with permission to publish — the
+         production gate refuses to promote a build while it is present. -->
     <section class="section" id="football">
       <div class="wrap">
         <div class="section-head">
@@ -67,11 +74,16 @@ const away = VENUES.filter((v) => v !== home);
             {SITE.season} season.
           </p>
         </div>
+        <span class="slash" aria-hidden="true"></span>
 
         <div class="program-grid">
-          <article class="card">
+          <article class="card card--program">
             <div class="card__media">
-              <AppImage id="programA" sizes="(min-width: 840px) 46vw, 100vw" />
+              <AppImage
+                id="footballPlayers"
+                sizes="(min-width: 840px) 44vw, 100vw"
+                position="50% 40%"
+              />
             </div>
             <div class="card__body">
               <p class="card__tag">Program</p>
@@ -85,27 +97,41 @@ const away = VENUES.filter((v) => v !== home);
             </div>
           </article>
 
-          <article class="card" id="cheer">
-            <div class="card__media">
-              <AppImage id="programB" sizes="(min-width: 840px) 46vw, 100vw" />
+          <article class="card card--program" id="cheer">
+            <div
+              class="card__media card__media--placeholder"
+              data-asset-status="temporary-placeholder"
+              data-asset-id="cheerMedia"
+              data-asset-note="No cheer photograph exists with permission to publish; this panel is a declared placeholder and blocks promotion."
+            >
+              <span class="ph__label">Cheer</span>
+              <span class="ph__rule" aria-hidden="true"></span>
+              <span class="ph__note">Photography to come</span>
+              <span class="ph__sub">
+                We would rather show the real squad than stand in for it. Cheer photographs are
+                being collected from the organization.
+              </span>
             </div>
             <div class="card__body">
               <p class="card__tag">Program</p>
               <h3>Cheer</h3>
               <p>
-                Cheer is offered alongside football as part of the same organization and the same
-                {SITE.season} season.
+                Cheer is a program of {SITE.name} — it runs alongside football in the same
+                {SITE.season} season, on the sidelines and in league competition.
               </p>
               <a class="link-arrow" href={REGISTER_CTA.href}>Register for cheer</a>
             </div>
           </article>
         </div>
 
-        <p class="lede" style="font-size:0.9375rem">{SITE.programNote}</p>
+        <p class="program-note">{SITE.programNote}</p>
       </div>
     </section>
 
-    <!-- 3. MISSION / ABOUT -------------------------------------------------- -->
+    <!-- 3. MISSION / ABOUT --------------------------------------------------
+         Matches the approved wireframe: statement plus three value tiles, no
+         photograph. (The previous build put a vertical image here, which added
+         height without adding meaning.) -->
     <section class="section section--alt" id="about">
       <div class="wrap">
         <div class="section-head">
@@ -132,28 +158,23 @@ const away = VENUES.filter((v) => v !== home);
             </p>
           </div>
 
-          <div>
-            <div class="portrait">
-              <AppImage id="portraitA" sizes="(min-width: 900px) 40vw, 100vw" />
-            </div>
-            <ul class="values" style="margin-top:1.5rem">
-              <li class="value">
-                <strong>All-volunteer</strong>
-                <span>Run by volunteers who meet monthly throughout the year.</span>
-              </li>
-              <li class="value">
-                <strong>Cleared coaches</strong>
-                <span>
-                  Every coach must hold recent child abuse and criminal background clearances and
-                  complete concussion awareness training.
-                </span>
-              </li>
-              <li class="value">
-                <strong>Safe and positive</strong>
-                <span>A safe, positive environment for every participant.</span>
-              </li>
-            </ul>
-          </div>
+          <ul class="values">
+            <li class="value">
+              <strong>All-volunteer</strong>
+              <span>Run by volunteers who meet monthly throughout the year.</span>
+            </li>
+            <li class="value">
+              <strong>Cleared coaches</strong>
+              <span>
+                Every coach must hold recent child abuse and criminal background clearances and
+                complete concussion awareness training.
+              </span>
+            </li>
+            <li class="value">
+              <strong>Safe and positive</strong>
+              <span>A safe, positive environment for every participant.</span>
+            </li>
+          </ul>
         </div>
       </div>
     </section>
@@ -182,7 +203,9 @@ const away = VENUES.filter((v) => v !== home);
       </div>
     </section>
 
-    <!-- 5. PARENT RESOURCES -------------------------------------------------- -->
+    <!-- 5. PARENT RESOURCES --------------------------------------------------
+         A deliberate 2x2. The previous 3-across layout left the fourth card
+         orphaned and looked accidental. -->
     <section class="section" id="resources">
       <div class="wrap">
         <div class="section-head">
@@ -192,6 +215,7 @@ const away = VENUES.filter((v) => v !== home);
             The paperwork and the expectations, in one place — no need to hunt through the site.
           </p>
         </div>
+        <span class="slash" aria-hidden="true"></span>
 
         <div class="resource-grid">
           <div class="resource">
@@ -272,24 +296,30 @@ const away = VENUES.filter((v) => v !== home);
             </a>
           </div>
 
-          <ul class="venue-list">
-            {away.map((venue) => (
-              <li>
-                <span>
-                  <span class="venue__name">{venue.name}</span>
-                  <span class="venue__addr">{venue.address}</span>
-                </span>
-                <a class="venue__map" href={venue.map} target="_blank" rel="noopener">
-                  Map<span class="sr-only"> for {venue.name}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
+          <div class="venue-list-panel">
+            <p class="venue-list-heading">Other league venues</p>
+            <ul class="venue-list">
+              {away.map((venue) => (
+                <li>
+                  <span>
+                    <span class="venue__name">{venue.name}</span>
+                    <span class="venue__addr">{venue.address}</span>
+                  </span>
+                  <a class="venue__map" href={venue.map} target="_blank" rel="noopener">
+                    Map<span class="sr-only"> for {venue.name}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- 7. COMMUNITY / CONTACT ---------------------------------------------- -->
+    <!-- 7. COMMUNITY / CONTACT ----------------------------------------------
+         Photography of the team itself, with the Facebook link as supporting UI.
+         The previous build's image was a social post with large baked-in text,
+         which read as a repost rather than a website. -->
     <section class="section" id="community">
       <div class="wrap">
         <div class="section-head">
@@ -303,7 +333,7 @@ const away = VENUES.filter((v) => v !== home);
 
         <div class="community-grid">
           <div class="portrait">
-            <AppImage id="portraitB" sizes="(min-width: 840px) 46vw, 100vw" />
+            <AppImage id="communityField" sizes="(min-width: 840px) 46vw, 100vw" />
           </div>
           <div>
             <div class="contact-card">
@@ -317,7 +347,7 @@ const away = VENUES.filter((v) => v !== home);
                 Somerset Little Eagle Football
               </a>
             </div>
-            <div class="contact-card" style="margin-top:1.5rem">
+            <div class="contact-card" style="margin-top:1rem">
               <h3>Questions?</h3>
               <p>
                 Send us a message and a current-season officer will get back to you.

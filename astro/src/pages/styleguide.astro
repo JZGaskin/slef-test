@@ -4,7 +4,7 @@
 // typography, colour, spacing, buttons and cards in one place.
 import Base from '../layouts/Base.astro';
 import AppImage from '../components/AppImage.astro';
-import { IMAGES, TEMPORARY_COUNT } from '../data/images';
+import { IMAGES, PLACEHOLDERS, TEMPORARY_COUNT, PLACEHOLDER_COUNT } from '../data/images';
 
 const swatches = [
   ['Orange (accent)', '#f57e20', 'fill + large display type only — never small text on white'],
@@ -33,9 +33,10 @@ const swatches = [
         <p class="eyebrow">Internal — not indexed</p>
         <h1>Redesign styleguide</h1>
         <p>
-          Stage 1 design system for review: type, colour, spacing, buttons, cards and image
-          treatment. {TEMPORARY_COUNT} temporary Facebook-sourced photographs are in use and are
-          listed at the bottom.
+          Visual refinement pass: dominant photography, heavier display type, tighter rhythm,
+          athletic orange geometry. {TEMPORARY_COUNT} temporary Facebook-sourced photographs are in
+          use and {PLACEHOLDER_COUNT} declared placeholder (the Cheer card) is on the homepage —
+          both are listed at the bottom and both block promotion.
         </p>
       </div>
     </div>
@@ -88,14 +89,36 @@ const swatches = [
         <div class="sg-item">
           <p class="eyebrow">Cards</p>
           <div class="program-grid">
-            <article class="card">
+            <article class="card card--program">
               <div class="card__media">
-                <AppImage id="programA" sizes="(min-width: 840px) 46vw, 100vw" />
+                <AppImage id="footballPlayers" sizes="(min-width: 840px) 46vw, 100vw" />
               </div>
               <div class="card__body">
                 <p class="card__tag">Program</p>
                 <h3>Card with media</h3>
-                <p>16:10 media, 1px border, 16px radius, no heavy shadow.</p>
+                <p>4:3 media, 1px border, 4px orange top rule, 16px radius, no heavy shadow.</p>
+                <a class="link-arrow" href="#">Card link</a>
+              </div>
+            </article>
+            <article class="card card--program">
+              <div
+                class="card__media card__media--placeholder"
+                data-asset-status="temporary-placeholder"
+                data-asset-id="cheerMedia"
+                data-asset-note="Declared placeholder shown here too, so the whole treatment is reviewable."
+              >
+                <span class="ph__label">Cheer</span>
+                <span class="ph__rule" aria-hidden="true"></span>
+                <span class="ph__note">Photography to come</span>
+                <span class="ph__sub">The declared placeholder treatment.</span>
+              </div>
+              <div class="card__body">
+                <p class="card__tag">Placeholder</p>
+                <h3>Declared placeholder</h3>
+                <p>
+                  Not a photograph and not a broken image: a designed panel that blocks promotion
+                  until real cheer photography exists.
+                </p>
                 <a class="link-arrow" href="#">Card link</a>
               </div>
             </article>
@@ -114,12 +137,16 @@ const swatches = [
           <p class="eyebrow">Image treatment</p>
           <div class="sg-row" style="align-items:flex-start">
             <div style="flex:1 1 320px;max-width:420px">
-              <div class="portrait"><AppImage id="portraitA" sizes="420px" /></div>
+              <div class="portrait"><AppImage id="communityField" sizes="420px" /></div>
               <p style="font-size:0.875rem;color:var(--muted)">3:4 portrait, object-fit cover</p>
             </div>
             <div style="flex:1 1 320px;max-width:420px">
-              <div class="card__media"><AppImage id="programB" sizes="420px" /></div>
-              <p style="font-size:0.875rem;color:var(--muted)">16:10 media</p>
+              <div class="card__media"><AppImage id="footballPlayers" sizes="420px" /></div>
+              <p style="font-size:0.875rem;color:var(--muted)">4:3 media</p>
+            </div>
+            <div style="flex:1 1 320px;max-width:420px">
+              <div class="card__media"><AppImage id="heroCover" sizes="420px" /></div>
+              <p style="font-size:0.875rem;color:var(--muted)">16:9 media (hero source)</p>
             </div>
           </div>
         </div>
@@ -141,6 +168,15 @@ const swatches = [
             preview-only: no Facebook-derived photograph is authorized for production until the
             client approves its use.
           </p>
+          <p class="eyebrow" style="margin-top:1.5rem">Not yet available</p>
+          <ul>
+            {PLACEHOLDERS.map((p) => (
+              <li>
+                <code>{p.id}</code> — <strong>{p.label}</strong>. 
+                {p.needs}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>

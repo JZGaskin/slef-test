@@ -1,10 +1,13 @@
 /* ===========================================================================
    Somerset Little Eagle Football — redesign design system
    ---------------------------------------------------------------------------
-   Stage 1 of the modernization. This stylesheet is the whole visual language:
-   tokens, type, layout primitives, and the components the new homepage is made
-   from. It is intentionally hand-authored CSS rather than Tailwind utilities on
-   purpose:
+   Stage 1 of the modernization; visually refined in the "visual refinement pass"
+   to move the homepage toward the approved mock-up (dominant photography, bolder
+   black/orange contrast, tighter rhythm).
+
+   This stylesheet is the whole visual language: tokens, type, layout primitives,
+   and the components the homepage is made from. It is intentionally hand-authored
+   CSS rather than Tailwind utilities on purpose:
 
      * legacy.css is UNLAYERED, and unlayered CSS outranks every Tailwind
        cascade layer no matter the import order. That is the exact mechanism
@@ -18,6 +21,16 @@
    -> THIS FILE. Unlayered + last means the design system wins over legacy for
    equal specificity, which is how the shared chrome (header/footer/body type)
    is re-skinned without touching the parity stylesheet.
+
+   THE ONE HONEST LIMITATION
+   -------------------------
+   The hero is photo-dominant (a full-height image column that bleeds to the right
+   edge), and it is sized so the 960x572 source is NEVER displayed above its native
+   pixels — the rendered QA asserts this at 1440px. A genuinely full-bleed 100vw
+   background would need ~1.5x more pixels than exist; the source offers 1243x741
+   at Facebook, which cannot be retrieved without a logged-in session. So the
+   layout was chosen to make the photograph dominate WITHOUT upscaling, and the
+   original file is an explicit request to the client.
    =========================================================================== */
 
 /* ---------------------------------------------------------------------------
@@ -71,17 +84,22 @@
   --on-dark: #ffffff;
   --on-dark-muted: #c7c7c2;
 
-  /* Type */
+  /* Type. The display scale was pushed harder in the refinement pass: youth
+     sports reads as athletic display type, not editorial. */
   --font-display: 'Archivo', 'Arial Narrow', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --step--1: clamp(0.8125rem, 0.79rem + 0.12vw, 0.875rem);
   --step-0: clamp(1rem, 0.97rem + 0.16vw, 1.0625rem);
   --step-1: clamp(1.125rem, 1.07rem + 0.28vw, 1.25rem);
   --step-2: clamp(1.375rem, 1.26rem + 0.58vw, 1.75rem);
-  --step-3: clamp(1.75rem, 1.5rem + 1.2vw, 2.5rem);
-  --step-4: clamp(2.125rem, 1.7rem + 2.1vw, 3.25rem);
+  --step-3: clamp(1.875rem, 1.55rem + 1.5vw, 2.75rem);
+  /* The h1 scales with the viewport so the hero panel keeps fitting the band as the
+     column narrows. A fixed display size made the headline wrap to three lines at
+     ~1024px, which pushed the text past the height at which the photograph would
+     have to be enlarged. */
+  --step-4: clamp(1.95rem, 0.5rem + 2.35vw, 3rem);
 
-  /* Space (4px rhythm) */
+  /* Space (4px rhythm). */
   --s-1: 0.25rem;  --s-2: 0.5rem;   --s-3: 0.75rem;  --s-4: 1rem;
   --s-5: 1.5rem;   --s-6: 2rem;     --s-7: 2.5rem;   --s-8: 3rem;
   --s-9: 4rem;     --s-10: 5rem;    --s-11: 7rem;
@@ -140,6 +158,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  overflow-x: hidden; /* belt-and-braces against a decorative transform overflow */
 }
 body > main { flex: 1 0 auto; }
 
@@ -151,8 +170,8 @@ h1, h2, h3, h4 {
   color: var(--ink);
   text-wrap: balance;
 }
-h1 { font-size: var(--step-4); font-weight: 900; }
-h2 { font-size: var(--step-3); }
+h1 { font-size: var(--step-4); font-weight: 900; letter-spacing: -0.025em; }
+h2 { font-size: var(--step-3); letter-spacing: -0.02em; }
 h3 { font-size: var(--step-2); }
 h4 { font-size: var(--step-1); line-height: 1.25; }
 
@@ -194,7 +213,7 @@ img { max-width: 100%; height: auto; }
   outline-offset: var(--focus-offset);
   border-radius: 2px;
 }
-.on-ink :focus-visible, .site-footer :focus-visible {
+.on-ink :focus-visible, .site-footer :focus-visible, .stage-hero :focus-visible {
   outline-color: var(--orange);
 }
 
@@ -225,9 +244,12 @@ img { max-width: 100%; height: auto; }
 }
 .wrap--narrow { max-width: var(--wrap-narrow); }
 
-.section { padding-block: var(--s-9); }
-@media (min-width: 768px) { .section { padding-block: var(--s-10); } }
-.section--tight { padding-block: var(--s-8); }
+/* Rhythm. Tightened in the refinement pass: 48/64px instead of 64/80px. The page
+   should read as one continuous piece of design rather than a run of isolated
+   panels separated by blank zones. */
+.section { padding-block: var(--s-8); }
+@media (min-width: 768px) { .section { padding-block: var(--s-9); } }
+.section--tight { padding-block: var(--s-7); }
 .section--alt { background: var(--paper-2); }
 .section--ink { background: var(--ink); color: var(--on-dark); }
 .section--ink h2, .section--ink h3 { color: var(--on-dark); }
@@ -240,17 +262,19 @@ img { max-width: 100%; height: auto; }
   font-family: var(--font-display);
   font-size: var(--step--1);
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
   margin: 0 0 var(--s-3);
 }
+/* The orange rule under an eyebrow is the system's signature mark: heavier and
+   skewed, which is where the athletic geometry comes from. */
 .eyebrow::before {
   content: '';
-  width: 26px;
-  height: 3px;
+  width: 30px;
+  height: 4px;
   background: var(--orange);
-  border-radius: 2px;
+  transform: skewX(-22deg);
 }
 .section--ink .eyebrow, .band .eyebrow, .venue-home .eyebrow { color: var(--on-dark-muted); }
 
@@ -261,11 +285,22 @@ img { max-width: 100%; height: auto; }
   font-size: var(--step-1);
   color: var(--muted);
   max-width: 62ch;
-  margin: var(--s-4) 0 0;
+  margin: var(--s-3) 0 0;
 }
 
 .section-head { max-width: var(--wrap-narrow); }
 .section-head h2 { margin: 0; }
+
+/* A skewed orange bar used as a section punctuation mark. Kept small and
+   centred/left inside the container so it can never cause horizontal overflow. */
+.slash {
+  display: block;
+  width: 84px;
+  height: 6px;
+  margin: var(--s-5) 0 0;
+  background: var(--orange);
+  transform: skewX(-22deg);
+}
 
 /* ---------------------------------------------------------------------------
    5. Buttons and links
@@ -287,7 +322,7 @@ img { max-width: 100%; height: auto; }
   font-family: var(--font-display);
   font-size: 0.9375rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   text-decoration: none;
   cursor: pointer;
@@ -302,8 +337,10 @@ img { max-width: 100%; height: auto; }
 .btn--outline { --btn-bg: transparent; --btn-fg: var(--ink); --btn-bd: var(--ink); }
 .btn--outline:hover { --btn-bg: var(--ink); --btn-fg: var(--on-dark); }
 
-.btn--onDark { --btn-bg: transparent; --btn-fg: var(--on-dark); --btn-bd: #4a4a50; }
+.btn--onDark { --btn-bg: transparent; --btn-fg: var(--on-dark); --btn-bd: #6a6a70; }
 .btn--onDark:hover { --btn-bg: var(--on-dark); --btn-fg: var(--ink); --btn-bd: var(--on-dark); }
+
+.btn--lg { min-height: 54px; padding: 0 var(--s-6); font-size: 1rem; }
 
 .btn--sm { min-height: 40px; padding: 0 var(--s-4); font-size: 0.8125rem; }
 
@@ -314,7 +351,9 @@ img { max-width: 100%; height: auto; }
   align-items: center;
   min-height: 28px; /* WCAG 2.5.8 target size — a standalone link is not "inline in text" */
   gap: var(--s-2);
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.02em;
   text-decoration: none;
   border-bottom: 2px solid var(--orange);
   padding-bottom: 2px;
@@ -323,7 +362,7 @@ img { max-width: 100%; height: auto; }
 .link-arrow:hover::after { transform: translateX(3px); }
 .section--ink .link-arrow { color: var(--on-dark); }
 
-.btn-row { display: flex; flex-wrap: wrap; gap: var(--s-4); margin-top: var(--s-6); }
+.btn-row { display: flex; flex-wrap: wrap; gap: var(--s-3); margin-top: var(--s-6); }
 
 /* ---------------------------------------------------------------------------
    6. Header + navigation
@@ -332,7 +371,7 @@ img { max-width: 100%; height: auto; }
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: saturate(160%) blur(8px);
   border-bottom: 1px solid var(--line);
 }
@@ -351,20 +390,28 @@ img { max-width: 100%; height: auto; }
   margin-right: auto;
   min-width: 0;
 }
+/* The mark is 170x115, so 46px CSS height (= 68px wide) is still inside its native
+   pixels and reads as a real logo rather than a favicon. */
 .brand__mark {
   width: auto;
-  height: 40px; /* source is 170x115 — 40px CSS is the largest crisp size available */
+  height: 46px;
   flex: none;
 }
 .brand__name {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 0.9375rem;
-  line-height: 1.1;
-  letter-spacing: 0.01em;
+  font-size: 1.0625rem;
+  line-height: 1.05;
+  letter-spacing: -0.005em;
   text-transform: uppercase;
 }
-.brand__name span { display: block; font-weight: 500; font-size: 0.6875rem; letter-spacing: 0.16em; color: var(--muted); }
+.brand__name span {
+  display: block;
+  font-weight: 600;
+  font-size: 0.6875rem;
+  letter-spacing: 0.2em;
+  color: var(--orange-text);
+}
 @media (max-width: 479px) { .brand__name { display: none; } }
 
 .nav { display: none; }
@@ -373,7 +420,7 @@ img { max-width: 100%; height: auto; }
   display: inline-block;
   padding: var(--s-2) var(--s-3);
   font-size: 0.9375rem;
-  font-weight: 500;
+  font-weight: 600;
   text-decoration: none;
   border-radius: var(--r-sm);
   white-space: nowrap;
@@ -442,61 +489,179 @@ body.nav-open { overflow: hidden; }
 @media (min-width: 1024px) {
   .nav { display: block; }
   .nav__toggle, .nav__panel { display: none !important; }
-  .brand__name { font-size: 1rem; }
+  .brand__name { font-size: 1.125rem; }
 }
 
 /* ---------------------------------------------------------------------------
-   7. Hero
+   7. Hero — photographic and dominant
+   ---------------------------------------------------------------------------
+   The refinement pass replaced the centred split hero (a capped 620px 16:10 box
+   beside the text, which the brief called "mostly a large dark block with a
+   relatively small field image") with a full-height image column that bleeds to
+   the right edge of the viewport, so the photograph is the largest element on the
+   first screen.
+
+   Sizing is deliberate, not arbitrary: the source is 960x572, and the column is
+   kept at or under 0.92x of that at every viewport the QA measures, so NOTHING IS
+   UPSCALED even though the image is now much larger on screen. On phones the photo
+   leads and the panel continues directly beneath it, with a gradient welding the
+   two together so it reads as one hero rather than a photo above a text block.
 --------------------------------------------------------------------------- */
-.stage-hero { background: var(--ink); color: var(--on-dark); }
-.stage-hero__grid { display: grid; gap: var(--s-7); padding-block: var(--s-8) var(--s-9); }
-.stage-hero__panel h1 { color: var(--on-dark); margin: 0; }
-.stage-hero__panel .eyebrow { color: var(--on-dark-muted); }
-.stage-hero__lead { font-size: var(--step-1); color: var(--on-dark-muted); margin: var(--s-4) 0 0; max-width: 46ch; }
-/* The photo box is capped and given its own aspect ratio so the 960px source is
-   never displayed larger than its native size (the rendered QA asserts this for
-   every image). It is also why the hero is a split layout rather than a full-bleed
-   100vw photograph: at 1440px a full-bleed hero would need ~1.6x the pixels we
-   currently have. */
+.stage-hero {
+  position: relative;
+  background: var(--ink);
+  color: var(--on-dark);
+  overflow: hidden;
+}
+.stage-hero__inner { display: grid; }
+
 .stage-hero__media {
   position: relative;
   background: var(--ink-soft);
-  aspect-ratio: 16 / 10;
-  max-width: 620px;
-  border-radius: var(--r-lg);
+  aspect-ratio: 4 / 3;
+  max-height: 46vh;
   overflow: hidden;
+  /* The panel comes first in the DOM (so the H1 is the first thing a screen
+     reader meets); the photograph leads VISUALLY on phones and returns to the
+     right-hand column on desktop. */
+  order: -1;
 }
-.stage-hero__media img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; display: block; }
+.stage-hero__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 55%;
+  display: block;
+}
+/* Welds the photo into the ink panel on stacked layouts. The gradient must reach
+   FULL opacity in the exact panel colour: stopping at 92% left a visible horizontal
+   seam where the cropped box ended (a vision check on the 390px render flagged
+   "the photo ends abruptly"). */
+.stage-hero__media::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 42%;
+  background: linear-gradient(to bottom, rgba(17, 17, 19, 0) 0%, rgba(17, 17, 19, 0.55) 55%, #111113 100%);
+  pointer-events: none;
+}
+
+.stage-hero__panel {
+  position: relative;
+  padding: var(--s-7) var(--gutter) var(--s-8);
+}
+.stage-hero__panel h1 { color: var(--on-dark); margin: 0; }
+.stage-hero__panel .eyebrow { color: var(--on-dark-muted); }
+.stage-hero__lead {
+  font-size: var(--step-1);
+  color: var(--on-dark-muted);
+  margin: var(--s-4) 0 0;
+  max-width: 44ch;
+}
+.stage-hero__note {
+  font-size: var(--step--1);
+  color: var(--on-dark-muted);
+  margin: var(--s-4) 0 0;
+  max-width: 44ch;
+}
 
 .facts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--s-4);
-  margin: var(--s-7) 0 0;
-  padding: 0;
+  margin: var(--s-6) 0 0;
+  padding: var(--s-5) 0 0;
   list-style: none;
   border-top: 1px solid var(--ink-line);
-  padding-top: var(--s-5);
 }
 .facts li { font-size: var(--step--1); color: var(--on-dark-muted); }
 .facts strong {
   display: block;
   font-family: var(--font-display);
-  font-size: 1.0625rem;
-  font-weight: 700;
+  font-size: 1.125rem;
+  font-weight: 800;
   color: var(--on-dark);
   letter-spacing: 0.01em;
 }
+/* The fact row carries the athletic geometry: an orange tick above each value. */
+.facts strong::before {
+  content: '';
+  display: block;
+  width: 22px;
+  height: 3px;
+  margin-bottom: var(--s-2);
+  background: var(--orange);
+  transform: skewX(-22deg);
+}
+
+@media (max-width: 479px) {
+  /* No square hero on phones: a 1:1 box is TALLER than the 640x357 srcset variant the
+     browser selects for a 390px slot, which would force a 1.09x upscale. 4:3 stays legal
+     at every viewport the QA measures. */
+  .stage-hero__panel { padding-top: var(--s-6); }
+}
 
 @media (min-width: 900px) {
-  .stage-hero__grid { grid-template-columns: 1.1fr 1fr; align-items: center; gap: var(--s-9); padding-block: var(--s-11); }
+  /* THE HERO BAND AND THE PHOTOGRAPH ARE THE SAME RECTANGLE.
+     The picture is absolutely positioned to fill its column, so it can never
+     influence the row height — the band is exactly as tall as the text needs, and
+     the photograph is exactly as tall as the band. That removes both failure modes
+     at once: no ink above/below the picture (which read as a framed photo), and no
+     silent upscaling (a `height: 100%` image let a tall text column inflate the
+     image box to 658px, i.e. 1.15x the source).
+     `max-height: 572px` is the source's own height: past that the photograph would
+     have to be enlarged beyond its pixels, so the band stops there. */
+  .stage-hero__inner {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.13fr);
+    align-items: stretch;
+    max-height: 572px;
+    /* Above ~1800px the photo column would exceed the 960px source. Capping the band
+       keeps "never upscaled" true instead of merely true at the sizes we happened to
+       test. On a 1920 screen the picture ends a few pixels short of the viewport edge;
+       that is the honest trade for not enlarging it. */
+    max-inline-size: 1800px;
+    margin-inline: auto;
+  }
+  .stage-hero__media {
+    aspect-ratio: auto;
+    max-height: none;
+    height: auto;
+    align-self: stretch;
+    order: 0;
+  }
+  .stage-hero__media img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .stage-hero__media::after { display: none; }
+  .stage-hero__panel {
+    align-self: center;
+    padding: var(--s-6) var(--s-6) var(--s-6) max(var(--gutter), calc((100vw - var(--wrap)) / 2));
+  }
+  .stage-hero__panel .btn-row { margin-top: var(--s-4); }
+  .facts { margin-top: var(--s-4); padding-top: var(--s-4); }
   .facts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+/* Narrow desktops: slightly smaller hero buttons and a two-column fact row keep the
+   text panel inside the band instead of pushing the photograph past its pixels. */
+@media (min-width: 900px) and (max-width: 1199px) {
+  .stage-hero__panel { padding-block: var(--s-5); }
+  .stage-hero__panel .btn { min-height: 44px; padding: 0 var(--s-4); font-size: 0.875rem; }
+  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
+  .facts strong::before { width: 16px; height: 3px; margin-bottom: 4px; }
+  .facts strong { font-size: 1rem; }
+  .facts li { font-size: 0.75rem; }
+}
+@media (min-width: 1200px) {
+  .stage-hero__panel { padding-block: var(--s-7); }
 }
 
 /* ---------------------------------------------------------------------------
    8. Programs
 --------------------------------------------------------------------------- */
-.program-grid { display: grid; gap: var(--s-6); margin-top: var(--s-7); }
+.program-grid { display: grid; gap: var(--s-5); margin-top: var(--s-6); }
 @media (min-width: 840px) { .program-grid { grid-template-columns: 1fr 1fr; gap: var(--s-7); } }
 
 .card {
@@ -507,9 +672,17 @@ body.nav-open { overflow: hidden; }
   border-radius: var(--r-lg);
   overflow: hidden;
 }
-.card__media { position: relative; aspect-ratio: 16 / 10; background: var(--paper-3); }
-.card__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.card__body { padding: var(--s-5) var(--s-5) var(--s-6); display: flex; flex-direction: column; gap: var(--s-3); flex: 1; }
+/* The two program cards carry the orange top rule — this is the section with the
+   strongest identity content, so it gets the strongest treatment. */
+.card--program { border-top: 4px solid var(--orange); }
+
+/* A tighter crop than the old 16:10: it fills the card with people instead of
+   showing a wide, distant field. 8:5 is as tight as the crop can go while still
+   being legal against the 960x540 source AND its 640x360 srcset variant — a 4:3 box
+   would have needed a 1.1x upscale at the height. Measured by the rendered QA. */
+.card__media { position: relative; aspect-ratio: 8 / 5; background: var(--paper-3); overflow: hidden; }
+.card__media img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; display: block; }
+.card__body { padding: var(--s-5); display: flex; flex-direction: column; gap: var(--s-3); flex: 1; }
 .card__body h3 { margin: 0; }
 .card__body p { margin: 0; color: var(--muted); }
 .card__body .link-arrow { margin-top: auto; align-self: flex-start; font-size: 0.9375rem; }
@@ -517,62 +690,127 @@ body.nav-open { overflow: hidden; }
   font-family: var(--font-display);
   font-size: 0.6875rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--orange-text);
 }
+
+/* A deliberately designed placeholder, NOT a photograph and not a broken image.
+   It exists because no cheer photograph exists in the source; publishing a
+   football or street image under a "Cheer" heading would have been a false
+   description of the programme. The production gate refuses to promote a build
+   while this marker is present, so it cannot reach production by accident. */
+.card__media--placeholder {
+  display: grid;
+  place-content: center;
+  gap: var(--s-2);
+  text-align: center;
+  padding: var(--s-6);
+  background:
+    repeating-linear-gradient(-45deg, rgba(245, 126, 32, 0.12) 0 10px, transparent 10px 26px),
+    var(--ink);
+  color: var(--on-dark);
+}
+.ph__label {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.ph__rule { width: 46px; height: 5px; background: var(--orange); transform: skewX(-22deg); margin: 0 auto; }
+.ph__note {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffd9b8;
+}
+.ph__sub { font-size: 0.8125rem; color: var(--on-dark-muted); max-width: 28ch; margin: 0 auto; }
+
+.program-note { margin-top: var(--s-4); font-size: 0.9375rem; color: var(--muted); }
 
 /* ---------------------------------------------------------------------------
    9. Mission + values
 --------------------------------------------------------------------------- */
 .mission-grid { display: grid; gap: var(--s-7); margin-top: var(--s-6); }
-@media (min-width: 900px) { .mission-grid { grid-template-columns: 1.15fr 1fr; gap: var(--s-9); align-items: start; } }
+@media (min-width: 900px) { .mission-grid { grid-template-columns: 1.2fr 1fr; gap: var(--s-9); align-items: start; } }
 
 .prose-block p { margin: 0 0 var(--s-4); }
 .prose-block p:last-child { margin-bottom: 0; }
-.prose-block h3 { margin: var(--s-6) 0 var(--s-2); font-size: var(--step-1); }
+.prose-block h3 { margin: var(--s-5) 0 var(--s-2); font-size: var(--step-1); }
+.prose-block h3:first-child { margin-top: 0; }
 
-.values { display: grid; gap: var(--s-4); margin: 0; padding: 0; list-style: none; }
+/* Three stat/value tiles — the mock-up's "3 stat/value tiles", elevated from a
+   left-rule list into real tiles so the section has visual structure without a
+   photograph. */
+.values { display: grid; gap: var(--s-3); margin: 0; padding: 0; list-style: none; }
 .value {
-  border-left: 3px solid var(--orange);
-  padding: var(--s-1) 0 var(--s-1) var(--s-4);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--orange);
+  border-radius: var(--r-md);
+  padding: var(--s-4) var(--s-5);
 }
 .value strong {
   display: block;
   font-family: var(--font-display);
-  font-size: 1.0625rem;
-  font-weight: 700;
+  font-size: 1.125rem;
+  font-weight: 800;
   letter-spacing: 0.01em;
 }
 .value span { color: var(--muted); font-size: 0.9375rem; }
 
+/* Retained for the vertical images that remain (about/community). */
 .portrait {
   border-radius: var(--r-lg);
   overflow: hidden;
   background: var(--paper-3);
   aspect-ratio: 3 / 4;
-  /* Capped so a 3:4 column image cannot stretch a section to twice the length of
-     the text beside it (the homepage is a long page by design; this keeps it from
-     being long by accident). */
-  max-width: 420px;
+  max-width: 520px;
 }
 .portrait img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 /* ---------------------------------------------------------------------------
-   10. Registration band
+   10. Registration band — the strongest conversion moment
 --------------------------------------------------------------------------- */
 .band {
+  position: relative;
   background: var(--ink);
   color: var(--on-dark);
   border-radius: var(--r-lg);
-  padding: var(--s-8) var(--s-6);
+  padding: var(--s-7) var(--s-6);
   display: grid;
   gap: var(--s-6);
+  overflow: hidden;
 }
-@media (min-width: 900px) { .band { grid-template-columns: 1.35fr 1fr; align-items: center; padding: var(--s-9); gap: var(--s-9); } }
+/* The orange block in the corner is what makes this band read as an action
+   moment rather than another dark panel. */
+.band::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 6px;
+  background: var(--orange);
+}
+.band::after {
+  content: '';
+  position: absolute;
+  right: -60px;
+  top: -60px;
+  width: 180px;
+  height: 180px;
+  background: var(--orange);
+  opacity: 0.14;
+  transform: rotate(24deg);
+  pointer-events: none;
+}
+@media (min-width: 900px) { .band { grid-template-columns: 1.35fr 1fr; align-items: center; padding: var(--s-8) var(--s-9); gap: var(--s-8); } }
 .band h2 { color: var(--on-dark); margin: 0; }
-.band p { color: var(--on-dark-muted); margin: var(--s-4) 0 0; }
-.band__actions { display: flex; flex-direction: column; gap: var(--s-3); }
+.band p { color: var(--on-dark-muted); margin: var(--s-3) 0 0; }
+.band__actions { display: flex; flex-direction: column; gap: var(--s-3); position: relative; }
 .band__note {
   font-size: var(--step--1);
   color: var(--on-dark-muted);
@@ -582,19 +820,32 @@ body.nav-open { overflow: hidden; }
 }
 
 /* ---------------------------------------------------------------------------
-   11. Parent resources
+   11. Parent resources — a deliberate 2x2
+   ---------------------------------------------------------------------------
+   The previous 3-across + orphaned fourth card read as an accident. Two balanced
+   rows of two is deliberate at every width above mobile, and it gives each card
+   enough room to breathe without inventing a fifth thing to say.
 --------------------------------------------------------------------------- */
-.resource-grid { display: grid; gap: var(--s-5); margin-top: var(--s-7); }
-@media (min-width: 760px) { .resource-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (min-width: 1100px) { .resource-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.resource-grid { display: grid; gap: var(--s-4); margin-top: var(--s-6); }
+@media (min-width: 720px) { .resource-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-5); } }
 
 .resource {
+  position: relative;
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--r-md);
   padding: var(--s-5);
 }
-.resource h3 { margin: 0 0 var(--s-2); font-size: 1.0625rem; }
+.resource::before {
+  content: '';
+  position: absolute;
+  left: var(--s-5);
+  top: 0;
+  width: 40px;
+  height: 3px;
+  background: var(--orange);
+}
+.resource h3 { margin: var(--s-2) 0 var(--s-2); font-size: 1.125rem; }
 .resource p { margin: 0 0 var(--s-3); color: var(--muted); font-size: 0.9375rem; }
 .resource ul { margin: 0; padding-left: 1.15rem; color: var(--muted); font-size: 0.9375rem; }
 .resource li { margin-bottom: var(--s-2); }
@@ -619,29 +870,57 @@ body.nav-open { overflow: hidden; }
 
 /* ---------------------------------------------------------------------------
    12. Venues
------------------------------------------------------------------------------- */
-.venue-grid { display: grid; gap: var(--s-8); margin-top: var(--s-7); }
-@media (min-width: 940px) { .venue-grid { grid-template-columns: 1fr 1.25fr; align-items: start; } }
+--------------------------------------------------------------------------- */
+.venue-grid { display: grid; gap: var(--s-6); margin-top: var(--s-6); }
+@media (min-width: 940px) { .venue-grid { grid-template-columns: 1fr 1.3fr; align-items: start; gap: var(--s-8); } }
 
 .venue-home {
+  position: relative;
   background: var(--ink);
   color: var(--on-dark);
   border-radius: var(--r-lg);
   padding: var(--s-6);
+  overflow: hidden;
 }
-.venue-home h3 { color: var(--on-dark); margin: 0 0 var(--s-2); }
-.venue-home address { font-style: normal; color: var(--on-dark-muted); margin-bottom: var(--s-4); }
+.venue-home::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 5px;
+  height: 100%;
+  background: var(--orange);
+}
+.venue-home h3 { color: var(--on-dark); margin: 0 0 var(--s-2); font-size: var(--step-2); }
+.venue-home address { font-style: normal; color: var(--on-dark-muted); margin-bottom: var(--s-3); }
 .venue-home p { color: var(--on-dark-muted); font-size: 0.9375rem; margin: 0 0 var(--s-5); }
 
-.venue-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-2); }
-@media (min-width: 640px) { .venue-list { grid-template-columns: 1fr 1fr; gap: var(--s-2) var(--s-5); } }
-.venue-list li { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3); padding: var(--s-3) 0; border-bottom: 1px solid var(--line); }
+/* Secondary venues live in their own panel so the home field is clearly the
+   primary item and the rest is clearly reference material. */
+.venue-list-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--paper);
+  padding: var(--s-5);
+}
+.venue-list-heading {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 var(--s-2);
+}
+.venue-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+@media (min-width: 640px) { .venue-list { grid-template-columns: 1fr 1fr; gap: 0 var(--s-5); } }
+.venue-list li { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3); padding: var(--s-2) 0; border-bottom: 1px solid var(--line); }
 .venue-list .venue__name { font-weight: 600; }
 .venue-list .venue__addr { display: block; font-weight: 400; font-size: 0.875rem; color: var(--muted); }
 .venue-list .venue__map {
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
   display: inline-flex;
@@ -653,22 +932,24 @@ body.nav-open { overflow: hidden; }
 /* ---------------------------------------------------------------------------
    13. Community / contact
 --------------------------------------------------------------------------- */
-.community-grid { display: grid; gap: var(--s-6); margin-top: var(--s-7); }
-@media (min-width: 840px) { .community-grid { grid-template-columns: 1fr 1fr; } }
+.community-grid { display: grid; gap: var(--s-6); margin-top: var(--s-6); }
+@media (min-width: 840px) { .community-grid { grid-template-columns: 1.15fr 1fr; gap: var(--s-8); align-items: start; } }
+/* Capped so the 540x960 source is never stretched and so a tall 3:4 column cannot
+   drag the section out. */
+.community-grid .portrait { max-width: 470px; }
 
 .contact-card {
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
-  padding: var(--s-6);
+  padding: var(--s-5);
   background: var(--paper-2);
 }
-.contact-card h3 { margin: 0 0 var(--s-3); }
-.contact-card p { color: var(--muted); margin: 0 0 var(--s-5); }
+.contact-card h3 { margin: 0 0 var(--s-2); }
+.contact-card p { color: var(--muted); margin: 0 0 var(--s-4); }
 .contact-card .btn-row { margin-top: 0; }
 
-/* Explicit colours, not inherited: this chip appears on a white page AND in the
-   dark footer, and inheriting the footer's muted grey onto a light chip produced
-   a real 1.7:1 contrast failure (caught by the rendered QA). */
+/* The Facebook CTA is supporting UI, not the section's subject: it is a chip
+   beside real photography rather than a screenshot of a social post. */
 .fb-link {
   display: inline-flex;
   align-items: center;
@@ -678,52 +959,55 @@ body.nav-open { overflow: hidden; }
   border: 1px solid var(--line);
   border-radius: var(--r-md);
   padding: var(--s-3) var(--s-4);
-  background: var(--paper-2);
+  background: var(--paper);
   color: var(--ink);
 }
+/* Explicit colours, not inherited: this chip appears on a white page AND in the
+   dark footer, and inheriting the footer's muted grey onto a light chip produced
+   a real 1.7:1 contrast failure (caught by the rendered QA). */
 .fb-link:hover { border-color: var(--ink); background: var(--paper-3); }
 .fb-link svg { width: 18px; height: 18px; fill: currentColor; flex: none; }
 
 /* ---------------------------------------------------------------------------
-   14. Footer
+   14. Footer — kept, but ~25% shorter
 --------------------------------------------------------------------------- */
-.site-footer { background: var(--ink); color: var(--on-dark-muted); padding-block: var(--s-9) var(--s-6); margin-top: 0; }
-.site-footer__grid { display: grid; gap: var(--s-7); }
-@media (min-width: 760px) { .site-footer__grid { grid-template-columns: 1.4fr 1fr 1fr; gap: var(--s-9); } }
-.site-footer h2, .site-footer h3 { color: var(--on-dark); font-size: 1rem; margin: 0 0 var(--s-3); }
+.site-footer { background: var(--ink); color: var(--on-dark-muted); padding-block: var(--s-6) var(--s-4); margin-top: 0; }
+.site-footer__grid { display: grid; gap: var(--s-5); }
+@media (min-width: 760px) { .site-footer__grid { grid-template-columns: 1.5fr 1fr 1fr; gap: var(--s-6); } }
+.site-footer h2, .site-footer h3 { color: var(--on-dark); font-size: 0.9375rem; letter-spacing: 0.1em; text-transform: uppercase; margin: 0 0 var(--s-3); }
 .site-footer p { margin: 0; font-size: 0.9375rem; }
 .site-footer ul { list-style: none; margin: 0; padding: 0; font-size: 0.9375rem; }
-.site-footer li { margin-bottom: var(--s-2); }
+.site-footer li { margin-bottom: var(--s-1); }
 /* WCAG 2.5.8 (target size, AA): a link in a list is not "inline in a sentence",
    so it gets a real 24px target. */
 .site-footer li a { display: inline-block; min-height: 24px; padding-block: 3px; }
 .site-footer a { text-decoration: none; }
 .site-footer a:hover { text-decoration: underline; }
-.site-footer__brand { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-4); }
-.site-footer__brand img { height: 44px; width: auto; }
-.site-footer__name { font-family: var(--font-display); font-weight: 800; color: var(--on-dark); text-transform: uppercase; letter-spacing: 0.01em; line-height: 1.15; }
-.site-footer__name span { display: block; font-weight: 500; font-size: 0.6875rem; letter-spacing: 0.16em; color: var(--on-dark-muted); }
+.site-footer__brand { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-2); }
+.site-footer__brand img { height: 46px; width: auto; }
+.site-footer__name { font-family: var(--font-display); font-weight: 800; color: var(--on-dark); text-transform: uppercase; letter-spacing: 0.01em; line-height: 1.05; }
+.site-footer__name span { display: block; font-weight: 600; font-size: 0.6875rem; letter-spacing: 0.2em; color: var(--orange); }
 .site-footer__bar {
-  margin-top: var(--s-8);
-  padding-top: var(--s-5);
+  margin-top: var(--s-5);
+  padding-top: var(--s-3);
   border-top: 1px solid var(--ink-line);
   display: flex;
   flex-wrap: wrap;
-  gap: var(--s-4);
+  gap: var(--s-3) var(--s-5);
   justify-content: space-between;
   font-size: 0.8125rem;
 }
 
 /* ---------------------------------------------------------------------------
    15. Utility page shell (form pages, thank-you, 404, styleguide)
-   Stage 1 deliberately does NOT recompose these pages — they are re-framed just
-   enough to sit correctly under the new chrome. Their composition is Stage 2.
+   Deliberately NOT recomposed in these passes — they are re-framed just enough to
+   sit correctly under the new chrome. Their composition is the next stage.
 --------------------------------------------------------------------------- */
 .page { padding-top: var(--header-h); }
-.page__head { background: var(--paper-2); border-bottom: 1px solid var(--line); padding-block: var(--s-8); }
+.page__head { background: var(--paper-2); border-bottom: 1px solid var(--line); padding-block: var(--s-7); }
 .page__head h1 { margin: 0; }
 .page__head p { color: var(--muted); margin: var(--s-3) 0 0; max-width: 60ch; }
-.page__body { padding-block: var(--s-8) var(--s-10); }
+.page__body { padding-block: var(--s-7) var(--s-9); }
 
 .form-card {
   background: var(--paper);

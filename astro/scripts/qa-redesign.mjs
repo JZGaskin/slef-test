@@ -307,6 +307,37 @@ async function structureChecks() {
           cardBorder: cs('.card', 'borderStyle'),
           ledeMaxWidth: cs('.lede', 'maxWidth'),
           lineHeightBody: cs('body', 'lineHeight'),
+          // The hero band is capped at the tallest the 960x572 source can be shown at
+          // full height without upscaling. If the text panel ever needed more room than
+          // that, the band would be raised to fit it — and the photograph would start
+          // being stretched. So the panel's fit is asserted, not assumed.
+          heroBand: (() => {
+            const s = document.querySelector('.stage-hero');
+            return s ? Math.round(s.getBoundingClientRect().height) : 0;
+          })(),
+          heroPanelFits: (() => {
+            const p = document.querySelector('.stage-hero__panel');
+            if (!p) return false;
+            return p.scrollHeight <= p.clientHeight + 2;
+          })(),
+          heroPanelOverflow: (() => {
+            const p = document.querySelector('.stage-hero__panel');
+            if (!p) return 0;
+            return Math.max(0, p.scrollHeight - p.clientHeight);
+          })(),
+          heroImgFullHeight: (() => {
+            const m = document.querySelector('.stage-hero__media');
+            const i = document.querySelector('.stage-hero__media img');
+            const band = document.querySelector('.stage-hero');
+            if (!m || !i || !band) return 'n/a (stacked layout)';
+            // Only meaningful in the two-column desktop layout; on phones the photo
+            // is a block at the top of the band by design.
+            if (m.getBoundingClientRect().width < 500) return 'n/a (stacked layout)';
+            const mh = m.getBoundingClientRect().height;
+            const ih = i.getBoundingClientRect().height;
+            const bh = band.getBoundingClientRect().height;
+            return Math.abs(mh - ih) < 2 && Math.abs(bh - mh) <= 2 ? 'yes' : `no (band ${Math.round(bh)}, media ${Math.round(mh)}, img ${Math.round(ih)})`;
+          })(),
         };
       })(),
     };
@@ -345,6 +376,14 @@ async function structureChecks() {
     `heights ${d.ctaHeights.join(', ')}px (WCAG 2.5.8 AA needs 24px; the design rule is 44px, with a 40px compact header variant)`);
   check('design', 'cards use the hairline-border treatment (no heavy shadow)', /solid/.test(d.cardBorder) && parseFloat(d.cardRadius) >= 10, `${d.cardRadius} ${d.cardBorder}`);
   check('design', 'long-form lines are capped for readability', parseFloat(d.ledeMaxWidth) <= 900, d.ledeMaxWidth);
+  // The photographic hero: the band exists, its text is not clipped, and the picture
+  // fills the band rather than sitting in a frame inside it.
+  check('design', 'the hero band is a real photographic band, not a collapsed block',
+    d.heroBand >= 420 && d.heroBand <= 580, `${d.heroBand}px (source caps a full-height photo at 572px)`);
+  check('design', 'the hero text panel fits inside the band (nothing clipped)', d.heroPanelFits,
+    `overflow ${d.heroPanelOverflow}px`);
+  check('design', 'the hero photograph fills the band edge to edge', d.heroImgFullHeight === 'yes',
+    String(d.heroImgFullHeight));
 
   // heading order must not skip a level
   let prev = 0;
@@ -356,9 +395,17 @@ async function structureChecks() {
   check('a11y', 'heading levels do not skip', skips.length === 0, skips.join('; '));
 
   // images: provenance, dimensions, no upscaling at the rendered size (1440)
-  const upscaled = info.imgs.filter((i) => i.scale > 1.02);
+  // The hero image column is deliberately made dominant by making it TALLER, not by
+  // scaling the file up. It therefore gets a named allowance that is still < 1.0 —
+  // i.e. it too is never upscaled — because object-fit: cover rounds the crop up at
+  // some viewports. Everything else keeps the tight 1.02 rule.
+  const HERO_ALLOWANCE = { 'hero-cover.jpg': 1.0 };
+  const allowanceFor = (i) => HERO_ALLOWANCE[(i.currentSrc || i.src || '').split('/').pop()];
+  const upscaled = info.imgs.filter((i) => i.scale > (allowanceFor(i) ?? 1.02));
   check('images', 'no image is displayed larger than its native pixels (1440px)', upscaled.length === 0,
     upscaled.map((i) => `${i.src} (${i.currentSrc}) scale ${i.scale}x — box ${i.renderedWidth}x${i.renderedHeight} vs natural ${i.naturalWidth}x${i.naturalHeight} via object-fit:${i.objectFit}`).join('; '));
+  const scales = info.imgs.map((i) => `${(i.currentSrc || i.src || '').split('/').pop()} ${i.scale}x`);
+  check('images', 'every image scale is measured and reported (audit trail)', true, scales.join(', '));
   check('images', 'every image declares an asset status', info.imgs.every((i) => i.status));
   check('images', 'every image has width/height and loading', info.imgs.every((i) => i.loading));
   const hero = info.imgs.find((i) => i.fetchpriority === 'high');
@@ -385,6 +432,62 @@ async function responsiveChecks() {
         m.scrollWidth <= m.innerWidth + 1,
         `scrollWidth ${m.scrollWidth} vs ${m.innerWidth}; widest ${m.widest?.tag} right=${Math.round(m.widest?.w ?? 0)}`);
     }
+    // The hero must not be clipped at ANY measured width. The band caps the
+    // photograph at the height the source can carry, so if the text ever needed more
+    // room than that, the band would silently cut it — this is the check that catches
+    // it, at every viewport rather than only the widest one.
+    await goto('/');
+    const hero = await page.evaluate(() => {
+      const band = document.querySelector('.stage-hero');
+      const media = document.querySelector('.stage-hero__media');
+      const panel = document.querySelector('.stage-hero__panel');
+      if (!band || !media || !panel) return null;
+      const b = band.getBoundingClientRect();
+      const m = media.getBoundingClientRect();
+      const p = panel.getBoundingClientRect();
+      return {
+        band: Math.round(b.height),
+        media: Math.round(m.height),
+        panel: Math.round(p.height),
+        panelBottom: Math.round(p.bottom),
+        bandBottom: Math.round(b.bottom),
+      };
+    });
+    const clipped = hero.panel > hero.band + 2 || hero.panelBottom > hero.bandBottom + 2 || hero.media > hero.band + 2;
+    check('responsive', `the hero is not clipped at ${vp.name}`, !clipped,
+      `band ${hero.band} / media ${hero.media} / panel ${hero.panel}`);
+
+    // Image scale at THIS viewport. The browser chooses a srcset candidate by width,
+    // so a near-square box can outgrow the file it was handed even though a wider
+    // viewport is fine — that is exactly the defect this check exists for. Candidates
+    // are loaded inside the page (cached after the first pass); `naturalWidth` is only
+    // trustworthy on an Image with no srcset.
+    const scales = await page.evaluate(async () => {
+      const imgs = [...document.querySelectorAll('img')];
+      const urls = [...new Set(imgs
+        .flatMap((i) => [i.currentSrc, ...(i.getAttribute('srcset') ?? '').split(',').map((s) => s.trim().split(/\s+/)[0])])
+        .filter((u) => u && !/^data:/.test(u))
+        .map((u) => new URL(u, location.href).href))];
+      const dims = {};
+      await Promise.all(urls.map((u) => new Promise((res) => {
+        const p = new Image();
+        p.onload = () => { dims[u] = { w: p.naturalWidth, h: p.naturalHeight }; res(); };
+        p.onerror = () => { dims[u] = null; res(); };
+        p.src = u;
+      })));
+      return imgs.map((i) => {
+        const r = i.getBoundingClientRect();
+        const t = dims[i.currentSrc];
+        if (!t || !r.width) return null;
+        const fit = getComputedStyle(i).objectFit;
+        const scale = fit === 'cover' ? Math.max(r.width / t.w, r.height / t.h) : r.width / t.w;
+        return { src: (i.currentSrc || '').split('/').pop(), scale: Number(scale.toFixed(3)) };
+      }).filter(Boolean);
+    });
+    const HERO_ALLOWANCE = { 'hero-cover.jpg': 1.0, 'hero-cover-640.jpg': 1.0 };
+    const bad = scales.filter((s) => s.scale > (HERO_ALLOWANCE[s.src] ?? 1.02));
+    check('responsive', `no image is upscaled at ${vp.name}`, bad.length === 0,
+      bad.length ? bad.map((b) => `${b.src} ${b.scale}x`).join(', ') : scales.map((s) => `${s.src} ${s.scale}x`).join(', '));
   }
 }
 

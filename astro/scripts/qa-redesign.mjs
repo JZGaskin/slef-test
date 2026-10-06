@@ -91,9 +91,19 @@ const contrast = (rgb1, rgb2) => {
 };
 
 // ---- 1. routes + redirect map (HTTP level) ---------------------------------
-const localRedirects = fs.existsSync(path.join(ROOT, 'public/_redirects'))
-  ? parseRedirectsFile(fs.readFileSync(path.join(ROOT, 'public/_redirects'), 'utf8'))
-  : parseNetlifyToml(fs.readFileSync(path.join(ROOT, 'netlify.toml'), 'utf8'));
+// The shipped _redirects is parsed by OUR model of Netlify's parser, and a single
+// dropped rule is a failure here and at the top of every run: a line Netlify cannot
+// parse is a 404 for a real visitor, not a cosmetic warning. (This exact defect
+// shipped once as `"/#about"`.)
+let localRedirects = [];
+let redirectParseErrors = [];
+if (fs.existsSync(path.join(ROOT, 'public/_redirects'))) {
+  const parsed = parseRedirectsFile(fs.readFileSync(path.join(ROOT, 'public/_redirects'), 'utf8'));
+  localRedirects = parsed.rules;
+  redirectParseErrors = parsed.errors;
+} else {
+  localRedirects = parseNetlifyToml(fs.readFileSync(path.join(ROOT, 'netlify.toml'), 'utf8'));
+}
 
 async function httpChecks() {
   for (const route of ROUTES) {
@@ -118,6 +128,33 @@ async function httpChecks() {
     const target = await get(`${BASE}${rule.to}`);
     check('redirects', `${rule.to} resolves (1 hop)`, target.status === 200, `status ${target.status}`);
   }
+
+  // Every rule Netlify keeps must survive OUR parser too — a dropped rule is a 404.
+  check('redirects', 'the shipped _redirects has no line Netlify would drop', redirectParseErrors.length === 0,
+    redirectParseErrors.join('; '));
+  check('redirects', 'no redirect destination contains a fragment', localRedirects.every((r) => !r.to.includes('#')),
+    localRedirects.filter((r) => r.to.includes('#')).map((r) => `${r.from} -> ${r.to}`).join(', '));
+  check('redirects', 'no redirect destination is quoted', localRedirects.every((r) => !/["']/.test(r.to) && !/["']/.test(r.from)),
+    localRedirects.filter((r) => /["']/.test(r.to)).map((r) => `${r.from} -> ${r.to}`).join(', '));
+
+  // The retired About/Fields URLs must land on the homepage, one hop, whatever the
+  // legacy spelling — including the trailing-slash and .html forms.
+  const retired = ['/about', '/about/', '/about.html', '/pages/about', '/pages/about/', '/pages/about.html',
+    '/fields', '/fields/', '/fields.html', '/pages/fields', '/pages/fields/', '/pages/fields.html'];
+  for (const p of retired) {
+    const res = await get(`${BASE}${p}`);
+    check('redirects', `retired ${p} -> /`, res.status === 301 && res.location === '/', `status ${res.status} location ${res.location}`);
+  }
+
+  // ...and the homepage must actually still HAVE the two anchors the nav links to.
+  const home = await get(`${BASE}/`);
+  check('anchors', 'the homepage still has the #about section', /id="about"/.test(home.body));
+  check('anchors', 'the homepage still has the #fields section', /id="fields"/.test(home.body));
+
+  // no redirect loops: following any rule's destination must not land on another rule
+  const loopTargets = new Set(localRedirects.map((r) => r.from));
+  const loops = localRedirects.filter((r) => r.to !== '/' && loopTargets.has(r.to.split('?')[0].split('#')[0]) && r.to !== r.from);
+  check('redirects', 'no redirect loops', loops.length === 0, loops.map((r) => `${r.from} -> ${r.to}`).join(', '));
 
   // robots.txt
   const robots = await get(`${BASE}/robots.txt`);

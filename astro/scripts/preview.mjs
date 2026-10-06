@@ -14,7 +14,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseRedirectsFile, parseNetlifyToml } from './lib/redirects.mjs';
+import { parseRedirectsFile, parseNetlifyToml, matchRedirect } from './lib/redirects.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const arg = (name, dflt) => {
@@ -38,8 +38,19 @@ let redirects = [];
 const dirRedirects = path.join(DIR, '_redirects');
 const netlifyToml = path.join(ROOT, 'netlify.toml');
 if (fs.existsSync(dirRedirects)) {
-  // A no-build deploy is configured by its own _redirects.
-  redirects = parseRedirectsFile(readIf(dirRedirects));
+  // A no-build deploy is configured by its own _redirects — and that file is parsed
+  // by NETLIFY's rules, not ours. A line Netlify cannot parse is dropped, and a
+  // dropped rule is a 404. So a parse error here means this build does NOT do what
+  // the developer thinks it does: refuse to serve it rather than preview a fiction.
+  const parsed = parseRedirectsFile(readIf(dirRedirects));
+  redirects = parsed.rules;
+  if (parsed.errors.length) {
+    console.error(`preview: REFUSING TO SERVE — ${parsed.errors.length} _redirects line(s) would be DROPPED by Netlify`);
+    for (const e of parsed.errors) console.error(`  ${e}`);
+    console.error('  A dropped rule is a 404 for a real visitor. Netlify requires the destination to start with "/",');
+    console.error('  "http:" or "https:" — a quoted "…" or a fragment destination cannot work in _redirects.');
+    process.exit(3);
+  }
 } else {
   // A built deploy is configured by netlify.toml.
   redirects = parseNetlifyToml(readIf(netlifyToml));
@@ -117,10 +128,10 @@ const server = http.createServer((req, res) => {
 
   // explicit redirect map — but an unforced rule is SHADOWED by a real file at the
   // same path (Netlify's documented behaviour), so fall through to file serving.
-  for (const r of redirects) {
-    if (r.from !== urlPath) continue;
-    if (!r.force && fileAt(r.from)) continue;
-    return send(res, r.status, '', { Location: r.to });
+  // `matchRedirect` also matches the trailing-slash form, as Netlify does.
+  const hit = matchRedirect(redirects, urlPath);
+  if (hit && (hit.force || !fileAt(hit.from))) {
+    return send(res, hit.status, '', { Location: hit.to });
   }
 
   // candidate files, in the order Netlify's pretty-URL handling resolves them

@@ -11,7 +11,8 @@
     "qa": "node scripts/qa-redesign.mjs",
     "qa:parity": "node scripts/qa.mjs",
     "check:assets": "node scripts/check-assets.mjs dist",
-    "redirects:check": "node tests/redirect-map-test.mjs"
+    "redirects:check": "node tests/redirect-map-test.mjs && node tests/redirect-retired-routes-test.mjs",
+    "redirects:check:vendor": "node tests/redirect-map-test.mjs && node tests/redirect-retired-routes-test.mjs --require-vendor"
   },
   "dependencies": {
     "@astrojs/sitemap": "3.7.4",

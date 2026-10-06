@@ -18,14 +18,15 @@
  * asserted from a hard-coded list of the URLs that existed before the redesign —
  * not from the map itself (which would make the test vacuous).
  *
- * It also asserts the retired routes point at the HOMEPAGE ANCHORS and that the
- * registration success path cannot break, because those are the two decisions the
- * consolidation actually makes.
+ * It also asserts that every retired route reaches the HOMEPAGE (never a fragment
+ * destination — Netlify drops such a line), that the homepage still HAS the anchors
+ * the navigation links to, and that the registration success path cannot break,
+ * because those are the decisions the consolidation actually makes.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseRedirectsFile, parseNetlifyToml } from '../scripts/lib/redirects.mjs';
+import { parseRedirectsFile, parseNetlifyToml, findRedirectLoops } from '../scripts/lib/redirects.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -38,35 +39,48 @@ const eq = (name, a, b) => (JSON.stringify(a) === JSON.stringify(b) ? ok(name) :
 // --- the two copies ----------------------------------------------------------
 const redirectsText = fs.readFileSync(path.join(ROOT, 'public/_redirects'), 'utf8');
 const tomlText = fs.readFileSync(path.join(ROOT, 'netlify.toml'), 'utf8');
-const rawFromRedirects = parseRedirectsFile(redirectsText);
-const fromRedirects = rawFromRedirects;
+// OUR parser models Netlify's: a line whose destination is not a `/`-rooted path (or
+// an absolute URL) is REJECTED AND DROPPED, exactly as @netlify/redirect-parser does.
+// The old parser accepted a quoted `"/#about"` and this suite happily asserted it,
+// which is how eight live 404s shipped. A parse error is now a hard failure.
+const parsed = parseRedirectsFile(redirectsText);
+const fromRedirects = parsed.rules;
 const fromToml = parseNetlifyToml(tomlText);
 
 console.log('redirect map');
 console.log(`  _redirects rules : ${fromRedirects.length}`);
 console.log(`  netlify.toml     : ${fromToml.length}`);
 
-eq('the two copies list the same rules, in the same order', fromRedirects, fromToml);
+for (const e of parsed.errors) no('_redirects line Netlify would DROP', e);
+if (parsed.errors.length === 0) ok(`every _redirects line is one Netlify will keep (${fromRedirects.length} rules)`);
+
+// `line` is diagnostics only — the two copies are compared on the rule itself.
+const shape = (r) => ({ from: r.from, to: r.to, status: r.status, force: r.force });
+eq('the two copies list the same rules, in the same order', fromRedirects.map(shape), fromToml.map(shape));
 eq(
-  'fragment destinations are QUOTED in _redirects (an unquoted # is a comment on Netlify)',
-  [...redirectsText.matchAll(/^\s*\S+\s+(")?\/#about/gm)].every((m) => m[1] === '"') &&
-    [...redirectsText.matchAll(/^\s*\S+\s+(")?\/#fields/gm)].every((m) => m[1] === '"') &&
-    (redirectsText.match(/\/#about/g) ?? []).length >= 4,
-  true,
+  'NO redirect destination contains a fragment (a fragment is not a legal destination, and quoting it does not help)',
+  fromRedirects.filter((r) => r.to.includes('#')).map((r) => `${r.from} -> ${r.to}`),
+  [],
 );
+eq(
+  'NO redirect rule uses quotes (Netlify has no quote syntax in _redirects)',
+  fromRedirects.filter((r) => /["']/.test(r.to) || /["']/.test(r.from)).map((r) => `${r.from} -> ${r.to}`),
+  [],
+);
+eq('no redirect loops', findRedirectLoops(fromRedirects), []);
 
 // --- the URLs that existed before this redesign -------------------------------
 // Hard-coded on purpose: if the map dropped one of these, nothing else would notice.
 const REQUIRED = {
   '/index.html': '/',
-  '/pages/about': '/#about',
-  '/pages/about.html': '/#about',
-  '/about': '/#about',
-  '/about.html': '/#about',
-  '/pages/fields': '/#fields',
-  '/pages/fields.html': '/#fields',
-  '/fields': '/#fields',
-  '/fields.html': '/#fields',
+  '/pages/about': '/',
+  '/pages/about.html': '/',
+  '/about': '/',
+  '/about.html': '/',
+  '/pages/fields': '/',
+  '/pages/fields.html': '/',
+  '/fields': '/',
+  '/fields.html': '/',
   '/pages/register': '/register',
   '/pages/register.html': '/register',
   '/pages/physical': '/physical',
@@ -88,7 +102,14 @@ for (const [from, to] of Object.entries(REQUIRED)) {
 
 // --- the consolidation decisions ---------------------------------------------
 const retired = fromRedirects.filter((r) => ['/pages/about', '/pages/about.html', '/about', '/about.html', '/pages/fields', '/pages/fields.html', '/fields', '/fields.html'].includes(r.from));
-eq('every retired About/Fields URL lands on a homepage anchor', retired.every((r) => r.to.startsWith('/#')), true);
+eq('all 8 retired About/Fields URLs have a rule', retired.length, 8);
+eq('every retired About/Fields URL lands on the homepage', retired.every((r) => r.to === '/'), true);
+// The navigation still points at the anchors, so the homepage must keep them.
+const homepage = fs.readFileSync(path.join(ROOT, 'src/pages/index.astro'), 'utf8');
+eq('the homepage still defines the #about anchor the nav links to', /id="about"/.test(homepage), true);
+eq('the homepage still defines the #fields anchor the nav links to', /id="fields"/.test(homepage), true);
+const navData = fs.readFileSync(path.join(ROOT, 'src/data/site.ts'), 'utf8');
+eq('the navigation still links to /#about and /#fields', /'\/#about'/.test(navData) && /'\/#fields'/.test(navData), true);
 eq('the registration success path is preserved', fromRedirects.some((r) => r.from === '/pages/thankyou' && r.to === '/thankyou'), true);
 eq('no rule points at a retired page', fromRedirects.some((r) => r.to === '/pages/about' || r.to === '/pages/fields'), false);
 eq('no catch-all rule (which would hide a genuine 404)', fromRedirects.some((r) => r.from === '/*'), false);

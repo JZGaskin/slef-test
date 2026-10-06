@@ -26,51 +26,57 @@
   force = true
 
 # Retired routes — About and Fields content is on the homepage now.
+# The destination is `/`, NOT `/#about`: a fragment is only legal in this TOML file,
+# and _redirects (which a no-build deploy reads) cannot express one at all — a
+# quoted `"/#about"` is a parse error there and Netlify drops the rule, which is a
+# 404 for a real visitor. The two copies are kept IDENTICAL on purpose (asserted by
+# tests/redirect-map-test.mjs), so the fragment is expressed where it belongs: in the
+# homepage navigation, not in the redirect map.
 [[redirects]]
   from = "/pages/about.html"
-  to = "/#about"
+  to = "/"
   status = 301
   force = true
 
 [[redirects]]
   from = "/pages/about"
-  to = "/#about"
+  to = "/"
   status = 301
   force = true
 
 [[redirects]]
   from = "/about.html"
-  to = "/#about"
+  to = "/"
   status = 301
   force = true
 
 [[redirects]]
   from = "/about"
-  to = "/#about"
+  to = "/"
   status = 301
   force = true
 
 [[redirects]]
   from = "/pages/fields.html"
-  to = "/#fields"
+  to = "/"
   status = 301
   force = true
 
 [[redirects]]
   from = "/pages/fields"
-  to = "/#fields"
+  to = "/"
   status = 301
   force = true
 
 [[redirects]]
   from = "/fields.html"
-  to = "/#fields"
+  to = "/"
   status = 301
   force = true
 
 [[redirects]]
   from = "/fields"
-  to = "/#fields"
+  to = "/"
   status = 301
   force = true
 

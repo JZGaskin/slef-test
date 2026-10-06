@@ -8,8 +8,9 @@
 # Design (approved modernization IA):
 #   * the site consolidates to 5 routes: / , /register , /physical , /contact ,
 #     /thankyou  (+ the branded 404)
-#   * About and Fields are no longer standalone destinations — their content moves
-#     to homepage sections, so their old URLs redirect to the anchors
+#   * About and Fields are no longer standalone destinations — their content lives
+#     on homepage sections, so their old URLs redirect to the HOMEPAGE. The homepage
+#     navigation still links internally to /#about and /#fields.
 #   * every legacy URL keeps working, in one hop
 #
 # Every rule is FORCED (`301!`). Netlify SHADOWS an unforced rule when a real file
@@ -17,19 +18,32 @@
 # `.html` files do exist on a parity build. Forcing is therefore the only form that
 # is correct in every case, and applying it uniformly means a future file appearing
 # at one of these paths can never silently de-force a rule.
+#
+# NEVER PUT A FRAGMENT IN A DESTINATION. A redirect destination must be a token that
+# begins with `/` (or an absolute http/https URL). `"/#about"` begins with a quote,
+# so Netlify's parser rejects the line — "The destination path/URL must start with
+# \"/\", \"http:\" or \"https:\"" — and then DROPS THE RULE SILENTLY, which is a 404
+# for a real visitor. Quoting does not help: tokens are whitespace-separated and a
+# `#` that begins a token is a comment; there is no quote syntax. A fragment can
+# only be reached by the browser AFTER the redirect, never by the rule itself. Hence
+# the retired routes below go to `/`, and the homepage nav carries the anchors.
+# Enforced by tests/redirect-map-test.mjs and tests/redirect-retired-routes-test.mjs,
+# the latter cross-checked against Netlify's own parser when it is installed.
 
 /index.html              /                        301!
 
 # --- Retired routes: About and Fields now live on the homepage ---------------
-/pages/about.html        "/#about"                301!
-/pages/about             "/#about"                301!
-/about.html              "/#about"                301!
-/about                   "/#about"                301!
+# Destination is `/` on purpose — see the fragment warning above. One rule also
+# covers the trailing-slash form (`/about/`), as Netlify matches it.
+/pages/about.html        /                        301!
+/pages/about             /                        301!
+/about.html              /                        301!
+/about                   /                        301!
 
-/pages/fields.html       "/#fields"               301!
-/pages/fields            "/#fields"               301!
-/fields.html             "/#fields"               301!
-/fields                  "/#fields"               301!
+/pages/fields.html       /                        301!
+/pages/fields            /                        301!
+/fields.html             /                        301!
+/fields                  /                        301!
 
 # --- Form routes: same forms, now at top-level URLs --------------------------
 /pages/register.html     /register                301!

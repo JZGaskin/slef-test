@@ -13,6 +13,12 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 cd "$HERE"
 
+echo "== redirect map gate (Netlify's own parser) =="
+# A `_redirects` line Netlify cannot parse is DROPPED, and a dropped rule is a 404.
+# Fail the build here rather than discover it on the deployed preview. The same gate
+# (with Netlify's parser and matching engine) is run by the publisher on the bundle.
+node scripts/check-redirects.mjs public/_redirects --require-vendor
+
 echo "== production build =="
 rm -rf dist
 npm run build
@@ -33,6 +39,18 @@ echo "draft safety:"
 printf '  noindex meta pages : %s\n' "$(grep -rl 'noindex, nofollow' build/dist-draft --include='*.html' | wc -l)"
 printf '  robots.txt         : %s\n' "$(head -3 build/dist-draft/robots.txt | tr '\n' ' ')"
 printf '  sitemap files      : %s (must be 0)\n' "$(ls build/dist-draft | grep -c sitemap || true)"
+
+echo
+for bundle in build/dist-prod build/dist-draft; do
+  echo "bundle redirect gate: $bundle"
+  node scripts/check-redirects.mjs "$bundle/_redirects" --require-vendor --quiet
+  if cmp -s public/_redirects "$bundle/_redirects"; then
+    echo "   _redirects is byte-identical to public/_redirects"
+  else
+    echo "   FAIL $bundle/_redirects differs from public/_redirects" >&2
+    exit 1
+  fi
+done
 
 echo
 echo "production safety:"

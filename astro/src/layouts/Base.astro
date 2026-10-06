@@ -2,6 +2,7 @@
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { SITE } from '../data/site';
+import { BUILD_FAMILY, BUILD_REV } from '../data/build';
 import '../styles/global.css';
 
 interface Props {
@@ -51,7 +52,9 @@ const schema = {
 ---
 
 <!doctype html>
-<html lang="en">
+<!-- Build identity marker (data-z33-build*): read by publish-redesign.sh so a deploy
+     is identified by its BUILD, not by the photograph in the hero. See src/data/build.ts. -->
+<html lang="en" data-z33-build={BUILD_FAMILY} data-z33-build-rev={BUILD_REV}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

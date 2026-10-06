@@ -120,6 +120,20 @@ async function httpChecks() {
   const notFound = await get(`${BASE}/this-page-does-not-exist`);
   check('routes', 'an unknown URL answers 404', notFound.status === 404, `status ${notFound.status}`);
 
+  // The site BUILD IDENTITY baked into every page by build-redesign.sh. The publisher
+  // identifies a deployed preview by this, never by the name of the photograph in the
+  // hero: keying on `data-asset-id="heroCover"` is exactly what made a correct deploy
+  // read as stale when the compositional reset changed the hero image. A missing or
+  // placeholder revision means the bundle did not come from the sanctioned build, which
+  // the publisher would (correctly) refuse — so it fails here first.
+  const home = await get(`${BASE}/`);
+  const buildFam = (home.body.match(/data-z33-build="([^"]*)"/) || [])[1] ?? '';
+  const buildRev = (home.body.match(/data-z33-build-rev="([^"]*)"/) || [])[1] ?? '';
+  check('build', 'homepage carries the build family marker', buildFam === 'little-eagle-redesign',
+    `data-z33-build="${buildFam || '(absent)'}"`);
+  check('build', 'homepage carries a real build revision digest', /^[0-9a-f]{12}$/.test(buildRev),
+    `data-z33-build-rev="${buildRev || '(absent)'}"`);
+
   // the full redirect map, checked against the deployed rules themselves
   for (const rule of localRedirects) {
     const res = await get(`${BASE}${rule.from}`);

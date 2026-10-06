@@ -19,6 +19,21 @@ echo "== redirect map gate (Netlify's own parser) =="
 # (with Netlify's parser and matching engine) is run by the publisher on the bundle.
 node scripts/check-redirects.mjs public/_redirects --require-vendor
 
+# The site build IDENTITY, baked into every page as
+# <html data-z33-build="…" data-z33-build-rev="…"> and read back by
+# publish-redesign.sh, which compares the DEPLOYED artifact against this one.
+# It is derived from the artifact's inputs and must NOT name an asset: the previous
+# marker was `data-asset-id="heroCover"`, so when the compositional reset changed the
+# hero photograph the marker vanished from a correct deploy and the publisher called a
+# good deploy stale.
+Z33_BUILD_REV="$(bash scripts/build-rev.sh)"
+export Z33_BUILD_REV
+if ! printf '%s' "$Z33_BUILD_REV" | grep -Eq '^[0-9a-f]{12}$'; then
+  echo "FAIL could not compute a build revision digest (got '$Z33_BUILD_REV')" >&2
+  exit 1
+fi
+echo "== build identity: family $(sed -nE "s/^export const BUILD_FAMILY = '([^']*)'.*/\1/p" src/data/build.ts) rev $Z33_BUILD_REV =="
+
 echo "== production build =="
 rm -rf dist
 npm run build
@@ -48,6 +63,20 @@ for bundle in build/dist-prod build/dist-draft; do
     echo "   _redirects is byte-identical to public/_redirects"
   else
     echo "   FAIL $bundle/_redirects differs from public/_redirects" >&2
+    exit 1
+  fi
+done
+
+echo
+echo "build identity in both bundles (must be present and identical):"
+for bundle in build/dist-prod build/dist-draft; do
+  fam=$(grep -o 'data-z33-build="[^"]*"' "$bundle/index.html" | head -1 | sed -E 's/.*"([^"]*)"/\1/')
+  rev=$(grep -o 'data-z33-build-rev="[^"]*"' "$bundle/index.html" | head -1 | sed -E 's/.*"([^"]*)"/\1/')
+  present=$(grep -rl 'data-z33-build=' "$bundle" --include='*.html' | wc -l)
+  total=$(find "$bundle" -name '*.html' | wc -l)
+  printf '  %-18s family=%s rev=%s (%s/%s pages carry it)\n' "$(basename "$bundle")" "$fam" "$rev" "$present" "$total"
+  if [ "$fam" != "little-eagle-redesign" ] || [ "$rev" != "$Z33_BUILD_REV" ] || [ "$present" -ne "$total" ]; then
+    echo "   FAIL $bundle does not carry the expected build identity" >&2
     exit 1
   fi
 done

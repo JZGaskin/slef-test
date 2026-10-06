@@ -24,8 +24,12 @@ export default defineConfig({
     ? []
     : [
         sitemap({
-          // The confirmation page is noindex and robots-disallowed: keep it out of the sitemap too.
-          filter: (page) => !page.includes('/pages/thankyou'),
+          // Pages that must never be advertised to a crawler: the confirmation
+          // page, the branded 404, and the internal styleguide review page.
+          filter: (page) =>
+            !page.includes('/thankyou') &&
+            !page.includes('/404') &&
+            !page.includes('/styleguide'),
         }),
       ],
 });

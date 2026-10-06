@@ -1,77 +1,333 @@
 ---
 import Base from '../layouts/Base.astro';
-import { SITE } from '../data/site';
+import AppImage from '../components/AppImage.astro';
+import {
+  SITE,
+  VENUES,
+  SAFETY_LINKS,
+  PLAYER_EXPECTATIONS,
+  REGISTER_CTA,
+  FACEBOOK_ICON_PATH,
+} from '../data/site';
+
+const home = VENUES.find((v) => v.home) ?? VENUES[0];
+const away = VENUES.filter((v) => v !== home);
 ---
 
 <Base
-  title="Somerset Little Eagle Football & Cheer | Youth Football & Cheer, Somerset PA"
-  description="Somerset Little Eagle Football & Cheer — developmental youth football and cheer for grades K-6 in Somerset, PA. Register, find your field, and get your physical form here."
+  title="Somerset Little Eagle Football | Youth Football & Cheer, Somerset PA"
+  description="Somerset Little Eagle Football — developmental youth football and cheer for grades K-6 in Somerset, Pennsylvania. Season runs August through October. Register, find your field, and submit your physical here."
   active="home"
-  wrapNav={true}
 >
-  <main class="main-content">
-    <section class="hero">
-      <div class="hero-content">
-        <h1>
-          <span>Somerset</span>
-        </h1>
-        <h2>
-          <span>Little Eagle Football &amp; Cheer</span>
-        </h2>
-        <a class="cta-button" href="/pages/register">Register Today!</a>
+  <main id="main">
+    <!-- 1. HERO ------------------------------------------------------------
+         Deliberately a split hero rather than a full-bleed 100vw photograph:
+         the only current wide image is 960px, and a split layout displays it at
+         or below its native size. Nothing on this site is upscaled. -->
+    <section class="stage-hero">
+      <div class="wrap stage-hero__grid">
+        <div class="stage-hero__panel">
+          <p class="eyebrow">{SITE.league}</p>
+          <h1>Somerset Little&nbsp;Eagle Football</h1>
+          <p class="stage-hero__lead">
+            Youth football and cheer for Somerset, Pennsylvania. Tackle football at grade levels
+            {SITE.grades}, with a season that runs {SITE.season}.
+          </p>
+          <div class="btn-row">
+            <a class="btn btn--primary" href={REGISTER_CTA.href}>Register for the 2026 season</a>
+            <a class="btn btn--onDark" href="#football">Explore our programs</a>
+          </div>
+          <ul class="facts">
+            <li><strong>{SITE.grades}</strong>Grade levels</li>
+            <li><strong>Aug – Oct</strong>Season</li>
+            <li><strong>{SITE.leagueShort}</strong>League</li>
+            <li><strong>All-volunteer</strong>Organization</li>
+          </ul>
+        </div>
+        <div class="stage-hero__media">
+          <AppImage
+            id="heroCover"
+            loading="eager"
+            fetchpriority="high"
+            sizes="(min-width: 900px) 46vw, 100vw"
+            position="50% 40%"
+          />
+        </div>
       </div>
     </section>
 
-    <section class="mission-section">
-      <div class="div">
-        All players must have a completed
-        <a href={SITE.physicalFormPdf}>Physical Form</a>
-      </div>
-      <br />
-      <div class="div">
-        Completed forms can be submitted here:
-        <a href="/pages/physical">Submit Physical</a>
+    <!-- 2. PROGRAMS -------------------------------------------------------- -->
+    <section class="section" id="football">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">What we offer</p>
+          <h2>Two programs, one organization</h2>
+          <p class="lede">
+            Football and cheer are both part of {SITE.name}, and both run in the same
+            {SITE.season} season.
+          </p>
+        </div>
+
+        <div class="program-grid">
+          <article class="card">
+            <div class="card__media">
+              <AppImage id="programA" sizes="(min-width: 840px) 46vw, 100vw" />
+            </div>
+            <div class="card__body">
+              <p class="card__tag">Program</p>
+              <h3>Football</h3>
+              <p>
+                Tackle football teams at grade levels {SITE.grades}, playing in the
+                {SITE.league} ({SITE.leagueShort}). Coaches are focused on fundamentals,
+                safety and teamwork.
+              </p>
+              <a class="link-arrow" href={REGISTER_CTA.href}>Register for football</a>
+            </div>
+          </article>
+
+          <article class="card" id="cheer">
+            <div class="card__media">
+              <AppImage id="programB" sizes="(min-width: 840px) 46vw, 100vw" />
+            </div>
+            <div class="card__body">
+              <p class="card__tag">Program</p>
+              <h3>Cheer</h3>
+              <p>
+                Cheer is offered alongside football as part of the same organization and the same
+                {SITE.season} season.
+              </p>
+              <a class="link-arrow" href={REGISTER_CTA.href}>Register for cheer</a>
+            </div>
+          </article>
+        </div>
+
+        <p class="lede" style="font-size:0.9375rem">{SITE.programNote}</p>
       </div>
     </section>
 
-    <section class="mission container">
-      <h2>OUR MISSION</h2>
-      <p>
-        Our mission is to provide high level developmental football and cheer programs.
-      </p>
-      <a class="cta-button" href="/pages/about">About Us</a>
+    <!-- 3. MISSION / ABOUT -------------------------------------------------- -->
+    <section class="section section--alt" id="about">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">About us</p>
+          <h2>Built for Somerset’s young athletes</h2>
+        </div>
+
+        <div class="mission-grid">
+          <div class="prose-block">
+            <h3>Our mission</h3>
+            <p>Our mission is to provide high level developmental football and cheer programs.</p>
+            <h3>Where we play</h3>
+            <p>
+              {SITE.name} participates in the
+              <a href={SITE.leagueUrl} rel="noopener">{SITE.league} ({SITE.leagueShort})</a>. We have
+              tackle football teams at grade levels {SITE.grades} with a season beginning in August
+              and ending in October.
+            </p>
+            <h3>Volunteers</h3>
+            <p>
+              We are an all-volunteer organization, and we appreciate everyone who steps up to make
+              the season work for all involved. <a href="/contact">Get in touch</a> if you would like
+              to help.
+            </p>
+          </div>
+
+          <div>
+            <div class="portrait">
+              <AppImage id="portraitA" sizes="(min-width: 900px) 40vw, 100vw" />
+            </div>
+            <ul class="values" style="margin-top:1.5rem">
+              <li class="value">
+                <strong>All-volunteer</strong>
+                <span>Run by volunteers who meet monthly throughout the year.</span>
+              </li>
+              <li class="value">
+                <strong>Cleared coaches</strong>
+                <span>
+                  Every coach must hold recent child abuse and criminal background clearances and
+                  complete concussion awareness training.
+                </span>
+              </li>
+              <li class="value">
+                <strong>Safe and positive</strong>
+                <span>A safe, positive environment for every participant.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <section class="collage">
-      <div class="collage-item">
-        <img
-          src="/images/img-1.jpg"
-          alt="Little Eagle Football & Cheer players and cheerleaders"
-          width="960"
-          height="960"
-          loading="lazy"
-          decoding="async"
-        />
+    <!-- 4. REGISTRATION ----------------------------------------------------- -->
+    <section class="section section--tight" id="register">
+      <div class="wrap">
+        <div class="band">
+          <div>
+            <p class="eyebrow">Registration</p>
+            <h2>Register for the 2026 season</h2>
+            <p>
+              Registration is handled through our registration form. You will need your player’s
+              information and a payment method; the form shows current availability and fees.
+            </p>
+            <p class="band__note">
+              All football players must have a completed physical before the first practice. Already
+              have it? <a href="/physical">Submit it here</a>.
+            </p>
+          </div>
+          <div class="band__actions">
+            <a class="btn btn--primary btn--block" href={REGISTER_CTA.href}>Start registration</a>
+            <a class="btn btn--onDark btn--block" href="/physical">Submit a physical</a>
+          </div>
+        </div>
       </div>
-      <div class="collage-item">
-        <img
-          src="/images/img-2.jpg"
-          alt="Little Eagle Football & Cheer players and cheerleaders"
-          width="960"
-          height="768"
-          loading="lazy"
-          decoding="async"
-        />
+    </section>
+
+    <!-- 5. PARENT RESOURCES -------------------------------------------------- -->
+    <section class="section" id="resources">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">Parent resources</p>
+          <h2>What you’ll need before the season</h2>
+          <p class="lede">
+            The paperwork and the expectations, in one place — no need to hunt through the site.
+          </p>
+        </div>
+
+        <div class="resource-grid">
+          <div class="resource">
+            <h3>Physical form</h3>
+            <p>
+              All football players must have a completed physical form before the first practice.
+            </p>
+            <ul>
+              <li><a href={SITE.physicalFormPdf} rel="noopener">Download the physical form</a></li>
+              <li><a href="/physical">Submit a completed physical</a></li>
+            </ul>
+          </div>
+
+          <div class="resource">
+            <h3>Coaches’ clearances &amp; safety</h3>
+            <p>Every coach is required to hold these before working with players.</p>
+            <ul>
+              {SAFETY_LINKS.map((link) => (
+                <li><a href={link.href} rel="noopener">{link.label}</a></li>
+              ))}
+            </ul>
+          </div>
+
+          <div class="resource">
+            <h3>Player expectations</h3>
+            <p>Players and families should know what the season asks of them.</p>
+            <details>
+              <summary>Expectation of all players</summary>
+              <ul>
+                {PLAYER_EXPECTATIONS.map((item) => <li>{item}</li>)}
+              </ul>
+              <p style="margin-top:0.75rem">
+                {SITE.name}, along with the coaching staff, reserves the right to reduce playing time
+                or ask a player not to participate if any of the above expectations are not met.
+              </p>
+            </details>
+          </div>
+
+          <div class="resource">
+            <h3>Code of conduct</h3>
+            <p>
+              A safe and fun learning environment for our youth football players and cheerleaders is
+              the expectation for everyone involved.
+            </p>
+            <details>
+              <summary>Read the code of conduct</summary>
+              <p>
+                The Somerset Little Eagle Football organization strives to provide a safe and fun
+                learning environment for our youth football players and cheerleaders. Our
+                expectation is that all involved will abide by the code of conduct and recognize
+                that this is not an exhaustive list. Violations of this code of conduct or any act
+                deemed unbecoming shall be investigated by the executive board and penalties may be
+                imposed.
+              </p>
+            </details>
+          </div>
+        </div>
       </div>
-      <div class="collage-item">
-        <img
-          src="/images/img-3.jpg"
-          alt="Little Eagle Football & Cheer players and cheerleaders"
-          width="960"
-          height="960"
-          loading="lazy"
-          decoding="async"
-        />
+    </section>
+
+    <!-- 6. FIELDS / VENUES --------------------------------------------------- -->
+    <section class="section section--alt" id="fields">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">Fields &amp; venues</p>
+          <h2>Where we play</h2>
+          <p class="lede">Fields and venues used during the season, with directions for each.</p>
+        </div>
+
+        <div class="venue-grid">
+          <div class="venue-home">
+            <p class="eyebrow">Home field</p>
+            <h3>{home.name}</h3>
+            <address>{home.address}</address>
+            <p>Little Eagle teams play here, along with league venues across the region.</p>
+            <a class="btn btn--primary btn--sm" href={home.map} target="_blank" rel="noopener">
+              Open in maps
+            </a>
+          </div>
+
+          <ul class="venue-list">
+            {away.map((venue) => (
+              <li>
+                <span>
+                  <span class="venue__name">{venue.name}</span>
+                  <span class="venue__addr">{venue.address}</span>
+                </span>
+                <a class="venue__map" href={venue.map} target="_blank" rel="noopener">
+                  Map<span class="sr-only"> for {venue.name}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. COMMUNITY / CONTACT ---------------------------------------------- -->
+    <section class="section" id="community">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">Community</p>
+          <h2>Follow the season</h2>
+          <p class="lede">
+            News, photos and updates are posted on the organization’s Facebook page throughout the
+            season.
+          </p>
+        </div>
+
+        <div class="community-grid">
+          <div class="portrait">
+            <AppImage id="portraitB" sizes="(min-width: 840px) 46vw, 100vw" />
+          </div>
+          <div>
+            <div class="contact-card">
+              <h3>Follow on Facebook</h3>
+              <p>
+                {SITE.name} posts game days, photos and schedule updates on Facebook. It is the
+                fastest way to see what is happening.
+              </p>
+              <a class="fb-link" href={SITE.facebook} target="_blank" rel="noopener">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" aria-hidden="true"><path d={FACEBOOK_ICON_PATH}></path></svg>
+                Somerset Little Eagle Football
+              </a>
+            </div>
+            <div class="contact-card" style="margin-top:1.5rem">
+              <h3>Questions?</h3>
+              <p>
+                Send us a message and a current-season officer will get back to you.
+              </p>
+              <div class="btn-row">
+                <a class="btn btn--outline" href="/contact">Send us a message</a>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   </main>

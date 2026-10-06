@@ -1,0 +1,43 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../data/site';
+---
+
+<Base
+  title={`Thank You | ${SITE.name}`}
+  description="Thank you for registering with Somerset Little Eagle Football. Next steps: physicals, and how your coach will reach you."
+  noindex={true}
+>
+  <main id="main" class="page">
+    <div class="page__head">
+      <div class="wrap wrap--narrow">
+        <p class="eyebrow">Registration received</p>
+        <h1>Thank you!</h1>
+        <p>Now that you’ve signed up, here are a few important things.</p>
+      </div>
+    </div>
+    <div class="page__body">
+      <div class="wrap wrap--narrow prose">
+        <p>You will receive an email about your transaction.</p>
+
+        <h2>Physicals</h2>
+        <p>All football players will need the physical form completed by the first practice.</p>
+        <p>
+          <a class="btn btn--outline btn--sm" href={SITE.physicalFormPdf} rel="noopener">
+            Download the physical form
+          </a>
+        </p>
+        <p>
+          Completed forms can be submitted online: <a href="/physical">submit a physical</a>.
+        </p>
+
+        <h2>Contact and communications</h2>
+        <p>Your coach will reach out to you prior to the season.</p>
+
+        <p style="margin-top:2rem">
+          <a class="btn btn--primary" href="/">Back to the homepage</a>
+        </p>
+      </div>
+    </div>
+  </main>
+</Base>

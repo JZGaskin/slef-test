@@ -1,6 +1,53 @@
 ---
+import { SITE, FOOTER_NAV, REGISTER_CTA, FACEBOOK_ICON_PATH } from '../data/site';
+
+const year = new Date().getFullYear();
 ---
 
-<footer>
-  <p>&copy; <span id="year"></span> Little Eagle Football & Cheer. All rights reserved.</p>
+<footer class="site-footer">
+  <div class="wrap site-footer__grid">
+    <div>
+      <div class="site-footer__brand">
+        <img src="/images/SLEFLogo5.png" alt="" width="170" height="115" loading="lazy" decoding="async" data-asset-status="approved" data-asset-note="organization logo (SLEFLogo5.png, 170x115)" />
+        <span class="site-footer__name">
+          Somerset Little Eagle<span>Football &amp; Cheer</span>
+        </span>
+      </div>
+      <p>
+        {SITE.descriptor}. {SITE.programNote} An all-volunteer organization and a member of the
+        {SITE.league} ({SITE.leagueShort}).
+      </p>
+    </div>
+
+    <nav aria-label="Footer">
+      <h2>Explore</h2>
+      <ul>
+        {FOOTER_NAV.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+      </ul>
+    </nav>
+
+    <div>
+      <h2>Get started</h2>
+      <ul>
+        <li><a href={REGISTER_CTA.href}>{REGISTER_CTA.label} for the 2026 season</a></li>
+        <li><a href="/physical">Submit a physical</a></li>
+        <li><a href="/contact">Send us a message</a></li>
+      </ul>
+      <p style="margin-top:1.5rem">
+        <a class="fb-link" href={SITE.facebook} target="_blank" rel="noopener">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" aria-hidden="true"><path d={FACEBOOK_ICON_PATH}></path></svg>
+          Follow the season on Facebook
+        </a>
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap site-footer__bar">
+    <p>&copy; {year} {SITE.name}. All rights reserved.</p>
+    <p>
+      Information is collected only through the registration, physical-submission and contact
+      forms.
+    </p>
+    <p>Website by <a href="https://z33design.com" rel="noopener">Z33 Design</a></p>
+  </div>
 </footer>

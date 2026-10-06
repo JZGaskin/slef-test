@@ -14,6 +14,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseRedirectsFile, parseNetlifyToml } from './lib/redirects.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const arg = (name, dflt) => {
@@ -35,26 +36,13 @@ const PORT = Number(arg('port', '4321'));
 const readIf = (p) => (fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : '');
 let redirects = [];
 const dirRedirects = path.join(DIR, '_redirects');
+const netlifyToml = path.join(ROOT, 'netlify.toml');
 if (fs.existsSync(dirRedirects)) {
-  redirects = readIf(dirRedirects)
-    .split('\n')
-    .map((l) => l.replace(/#.*$/, '').trim())
-    .filter(Boolean)
-    .map((l) => l.split(/\s+/))
-    .filter((p) => p.length >= 2)
-    .map(([from, to, status]) => ({
-      from,
-      to,
-      status: Number(String(status).replace('!', '')) || 301,
-      force: String(status).endsWith('!'),
-    }));
+  // A no-build deploy is configured by its own _redirects.
+  redirects = parseRedirectsFile(readIf(dirRedirects));
 } else {
-  const toml = readIf(path.join(ROOT, 'netlify.toml'));
-  redirects = [...toml.matchAll(/\[\[redirects\]\]([\s\S]*?)(?=\n\[\[|\n\[|\s*$)/g)].map((m) => {
-    const get = (k) => (m[1].match(new RegExp(`^\\s*${k}\\s*=\\s*"([^"]*)"`, 'm')) || [])[1];
-    const has = (k) => new RegExp(`^\\s*${k}\\s*=\\s*true\\s*$`, 'm').test(m[1]);
-    return { from: get('from'), to: get('to'), status: Number(get('status') || 301), force: has('force') };
-  });
+  // A built deploy is configured by netlify.toml.
+  redirects = parseNetlifyToml(readIf(netlifyToml));
 }
 
 // Netlify's shadowing test: is there a real file at the rule's exact path?

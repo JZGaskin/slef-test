@@ -1,0 +1,148 @@
+---
+// Internal design-system review page for Stage 1. noindex, not linked from
+// anywhere, and excluded from the sitemap. Its purpose is to let Zach judge the
+// typography, colour, spacing, buttons and cards in one place.
+import Base from '../layouts/Base.astro';
+import AppImage from '../components/AppImage.astro';
+import { IMAGES, TEMPORARY_COUNT } from '../data/images';
+
+const swatches = [
+  ['Orange (accent)', '#f57e20', 'fill + large display type only — never small text on white'],
+  ['Orange strong (hover)', '#e06d10', 'button hover'],
+  ['Ink', '#111113', 'headings, body, dark bands, footer'],
+  ['Ink soft', '#1c1c20', 'image placeholders on dark'],
+  ['Ink line', '#2c2c31', 'rules on dark surfaces'],
+  ['Paper', '#ffffff', 'page'],
+  ['Paper 2', '#f7f7f5', 'alternate section'],
+  ['Paper 3', '#efefec', 'chips, image placeholder'],
+  ['Line', '#e4e4e1', 'hairline borders'],
+  ['Muted', '#5a5a5a', 'secondary text (AA on white)'],
+  ['On dark', '#ffffff', 'text on ink'],
+  ['On dark muted', '#c7c7c2', 'secondary text on ink (AA on #111113)'],
+];
+---
+
+<Base
+  title="Styleguide (internal) | Little Eagle redesign"
+  description="Internal design-system review page for the Little Eagle redesign. Not indexed, not linked."
+  noindex={true}
+>
+  <main id="main" class="page">
+    <div class="page__head">
+      <div class="wrap">
+        <p class="eyebrow">Internal — not indexed</p>
+        <h1>Redesign styleguide</h1>
+        <p>
+          Stage 1 design system for review: type, colour, spacing, buttons, cards and image
+          treatment. {TEMPORARY_COUNT} temporary Facebook-sourced photographs are in use and are
+          listed at the bottom.
+        </p>
+      </div>
+    </div>
+
+    <div class="page__body">
+      <div class="wrap">
+        <div class="sg-item">
+          <p class="eyebrow">Typography</p>
+          <p class="sg-h1">Archivo 900 — display heading</p>
+          <p class="sg-h2">Archivo 800 — section heading</p>
+          <p class="sg-h3">Archivo 800 — card heading</p>
+          <p class="lede">Inter — lede paragraph, set at the larger step and muted.</p>
+          <p>
+            Inter — body copy at 1rem–1.0625rem with 1.62 line height. Long-form parent content is
+            never set below 1rem. <a href="#">An inline link</a> and a
+            <span class="card__tag">card tag</span>.
+          </p>
+        </div>
+
+        <div class="sg-item">
+          <p class="eyebrow">Colour</p>
+          <div class="sg-row">
+            {swatches.map(([name, hex, use]) => (
+              <div class="swatch">
+                <div class="swatch__chip" style={`background:${hex}`}></div>
+                <code>{name}<br />{hex}</code>
+                <p style="font-size:0.75rem;color:var(--muted);margin:0.35rem 0 0">{use}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div class="sg-item">
+          <p class="eyebrow">Buttons</p>
+          <div class="sg-row">
+            <a class="btn btn--primary" href="#">Primary</a>
+            <a class="btn btn--outline" href="#">Outline</a>
+            <a class="btn btn--sm" href="#">Small</a>
+            <a class="link-arrow" href="#">Text link</a>
+          </div>
+          <div class="section--ink" style="margin-top:1.5rem;padding:1.5rem;border-radius:var(--r-lg)">
+            <div class="sg-row">
+              <a class="btn btn--primary" href="#">Primary on ink</a>
+              <a class="btn btn--onDark" href="#">On dark</a>
+              <a class="link-arrow" href="#">Text link on ink</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="sg-item">
+          <p class="eyebrow">Cards</p>
+          <div class="program-grid">
+            <article class="card">
+              <div class="card__media">
+                <AppImage id="programA" sizes="(min-width: 840px) 46vw, 100vw" />
+              </div>
+              <div class="card__body">
+                <p class="card__tag">Program</p>
+                <h3>Card with media</h3>
+                <p>16:10 media, 1px border, 16px radius, no heavy shadow.</p>
+                <a class="link-arrow" href="#">Card link</a>
+              </div>
+            </article>
+            <div class="resource">
+              <h3>Resource card</h3>
+              <p>Text-only card with a native disclosure.</p>
+              <details>
+                <summary>Collapsed content</summary>
+                <p>Native <code>details</code>/<code>summary</code> — no JavaScript.</p>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        <div class="sg-item">
+          <p class="eyebrow">Image treatment</p>
+          <div class="sg-row" style="align-items:flex-start">
+            <div style="flex:1 1 320px;max-width:420px">
+              <div class="portrait"><AppImage id="portraitA" sizes="420px" /></div>
+              <p style="font-size:0.875rem;color:var(--muted)">3:4 portrait, object-fit cover</p>
+            </div>
+            <div style="flex:1 1 320px;max-width:420px">
+              <div class="card__media"><AppImage id="programB" sizes="420px" /></div>
+              <p style="font-size:0.875rem;color:var(--muted)">16:10 media</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="sg-item">
+          <p class="eyebrow">Images in this build (temporary assets)</p>
+          <ul>
+            {Object.values(IMAGES).map((image) => (
+              <li>
+                <code>{image.id}</code> — {image.src} ({image.width}×{image.height}), status
+                <strong> {image.status}</strong>, subject verified:
+                <strong> {String(image.subjectVerified)}</strong>. Source: {image.credit}
+                {' '}(fbid {image.fbid}).
+              </li>
+            ))}
+          </ul>
+          <p class="lede" style="font-size:0.9375rem">
+            These are lower-resolution copies from the organization’s public Facebook page. They are
+            preview-only: no Facebook-derived photograph is authorized for production until the
+            client approves its use.
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+</Base>

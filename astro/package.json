@@ -3,11 +3,15 @@
   "type": "module",
   "version": "1.0.0",
   "private": true,
-  "description": "Little Eagle Football & Cheer - Somerset PA youth football and cheer. Astro + Tailwind rebuild (parity-first).",
+  "description": "Somerset Little Eagle Football - youth football and cheer, Somerset PA. Astro 5 + Tailwind 4.",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "qa": "node scripts/qa-redesign.mjs",
+    "qa:parity": "node scripts/qa.mjs",
+    "check:assets": "node scripts/check-assets.mjs dist",
+    "redirects:check": "node tests/redirect-map-test.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "3.7.4",

@@ -2,4 +2,5 @@ node_modules/
 dist/
 .astro/
 build/
-qa/screens/
+qa/screens*/
+qa/*.json

@@ -1,31 +1,47 @@
-# URL parity for the Astro rebuild.
+# Redirect map for the Little Eagle site.
 #
 # This file mirrors the `[[redirects]]` rules in netlify.toml, because a site that
-# is deployed WITHOUT a build step (branch deploy of the prebuilt output, or a
+# is deployed WITHOUT a build step (a branch deploy of the prebuilt output, or a
 # direct draft deploy) reads _redirects and does not read netlify.toml. Both lists
-# are identical; netlify.toml is the copy a built site uses.
+# are kept identical — tests/redirect-map-test.mjs asserts that.
 #
-# No real page URL changes in this migration — these only make the canonical form
-# explicit and add short aliases that currently 404.
+# Design (approved modernization IA):
+#   * the site consolidates to 5 routes: / , /register , /physical , /contact ,
+#     /thankyou  (+ the branded 404)
+#   * About and Fields are no longer standalone destinations — their content moves
+#     to homepage sections, so their old URLs redirect to the anchors
+#   * every legacy URL keeps working, in one hop
+#
+# Every rule is FORCED (`301!`). Netlify SHADOWS an unforced rule when a real file
+# exists at the same path (see Netlify's redirect "shadowing" docs), and the legacy
+# `.html` files do exist on a parity build. Forcing is therefore the only form that
+# is correct in every case, and applying it uniformly means a future file appearing
+# at one of these paths can never silently de-force a rule.
 
 /index.html              /                        301!
-/pages/about.html        /pages/about             301!
-/pages/register.html     /pages/register          301!
-/pages/fields.html       /pages/fields            301!
-/pages/contact.html      /pages/contact           301!
-/pages/physical.html     /pages/physical          301!
-/pages/thankyou.html     /pages/thankyou          301!
 
-/about                   /pages/about             301
-/register                /pages/register          301
-/fields                  /pages/fields            301
-/contact                 /pages/contact           301
-/physical                /pages/physical          301
-/thankyou                /pages/thankyou          301
+# --- Retired routes: About and Fields now live on the homepage ---------------
+/pages/about.html        "/#about"                301!
+/pages/about             "/#about"                301!
+/about.html              "/#about"                301!
+/about                   "/#about"                301!
 
-# The seven legacy .html paths above are FORCED (`301!`). Netlify shadows an
-# unforced rule when a real file exists at that path (see the Netlify
-# "shadowing" docs); those .html files DO exist (parity with the GitHub Pages
-# copy and the legacy site), so without the `!` the file wins and the clean
-# canonical URL is not authoritative. The short aliases below are not shadowed
-# by any file and need no `!`.
+/pages/fields.html       "/#fields"               301!
+/pages/fields            "/#fields"               301!
+/fields.html             "/#fields"               301!
+/fields                  "/#fields"               301!
+
+# --- Form routes: same forms, now at top-level URLs --------------------------
+/pages/register.html     /register                301!
+/pages/register          /register                301!
+
+/pages/physical.html     /physical                301!
+/pages/physical          /physical                301!
+
+/pages/contact.html      /contact                 301!
+/pages/contact           /contact                 301!
+
+# The registration form navigates the browser here after a successful submit, so
+# this one must never break.
+/pages/thankyou.html     /thankyou                301!
+/pages/thankyou          /thankyou                301!

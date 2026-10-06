@@ -1,0 +1,34 @@
+---
+import Base from '../layouts/Base.astro';
+import MachFormEmbed from '../components/MachFormEmbed.astro';
+import { MACHFORM, SITE } from '../data/site';
+
+const form = MACHFORM.forms.physical2026;
+---
+
+<Base
+  title={`Submit a Physical | ${SITE.name}`}
+  description="Submit a completed physical form for Somerset Little Eagle Football. All football players must have a physical completed before the first practice."
+  active="physical"
+>
+  <main id="main" class="page">
+    <div class="page__head">
+      <div class="wrap">
+        <p class="eyebrow">Before the first practice</p>
+        <h1>Submit a physical</h1>
+        <p>
+          All football players must have a completed physical form before the first practice.
+          <a href={SITE.physicalFormPdf} rel="noopener">Download the physical form</a>, have it
+          completed, then submit it here.
+        </p>
+      </div>
+    </div>
+    <div class="page__body">
+      <div class="wrap wrap--narrow">
+        <div class="form-card">
+          <MachFormEmbed id={form.id} title={form.title} height={form.height} />
+        </div>
+      </div>
+    </div>
+  </main>
+</Base>

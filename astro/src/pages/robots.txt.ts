@@ -13,7 +13,8 @@ const DRAFT = (import.meta.env.PUBLIC_NOINDEX ?? process.env.PUBLIC_NOINDEX) ===
 const PRODUCTION_ROBOTS = [
   'User-agent: *',
   'Allow: /',
-  'Disallow: /pages/thankyou',
+  'Disallow: /thankyou',
+  'Disallow: /styleguide',
   '',
   `Sitemap: ${SITE.url}/sitemap-index.xml`,
   '',

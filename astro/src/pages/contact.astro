@@ -1,0 +1,41 @@
+---
+import Base from '../layouts/Base.astro';
+import MachFormEmbed from '../components/MachFormEmbed.astro';
+import { FACEBOOK_ICON_PATH, MACHFORM, SITE } from '../data/site';
+
+const form = MACHFORM.forms.contact;
+---
+
+<Base
+  title={`Contact | ${SITE.name}`}
+  description="Contact Somerset Little Eagle Football. Send us a message and a current-season officer will get back to you."
+  active="contact"
+>
+  <main id="main" class="page">
+    <div class="page__head">
+      <div class="wrap">
+        <p class="eyebrow">Contact</p>
+        <h1>Send us a message</h1>
+        <p>
+          Questions about registration, the season or helping out? Send us a message and a
+          current-season officer will get back to you. The
+          <a href={SITE.facebook} target="_blank" rel="noopener">Facebook page</a> is the fastest way
+          to see what is happening.
+        </p>
+      </div>
+    </div>
+    <div class="page__body">
+      <div class="wrap wrap--narrow">
+        <div class="form-card">
+          <MachFormEmbed id={form.id} title={form.title} height={form.height} />
+        </div>
+        <p style="margin-top:1.5rem">
+          <a class="fb-link" href={SITE.facebook} target="_blank" rel="noopener">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" aria-hidden="true"><path d={FACEBOOK_ICON_PATH}></path></svg>
+            Follow the season on Facebook
+          </a>
+        </p>
+      </div>
+    </div>
+  </main>
+</Base>

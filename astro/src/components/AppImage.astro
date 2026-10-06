@@ -1,0 +1,55 @@
+---
+import { IMAGES } from '../data/images';
+
+interface Props {
+  /** Key in the image manifest. The component never takes a raw path. */
+  id: keyof typeof IMAGES | string;
+  /** `sizes` for the browser. Must describe the real layout width. */
+  sizes?: string;
+  class?: string;
+  /** 'lazy' by default; the hero passes 'eager'. */
+  loading?: 'lazy' | 'eager';
+  fetchpriority?: 'high' | 'low' | 'auto';
+  /** CSS object-position, for crop control. */
+  position?: string;
+}
+
+const {
+  id,
+  sizes = '100vw',
+  class: className = '',
+  loading = 'lazy',
+  fetchpriority = 'auto',
+  position,
+} = Astro.props;
+
+const asset = IMAGES[id as string];
+if (!asset) throw new Error(`AppImage: no manifest entry for "${id}"`);
+
+// srcset from the declared variants plus the full-size file. Widths are always
+// <= the source, so nothing is ever upscaled by the browser's selection.
+const srcset = [
+  ...asset.variants.map((v) => `${v.src} ${v.width}w`),
+  `${asset.src} ${asset.width}w`,
+].join(', ');
+
+const style = position ? `object-position:${position}` : undefined;
+---
+
+<img
+  src={asset.src}
+  srcset={srcset}
+  sizes={sizes}
+  width={asset.width}
+  height={asset.height}
+  alt={asset.alt}
+  loading={loading}
+  decoding="async"
+  fetchpriority={fetchpriority}
+  class={className || undefined}
+  style={style}
+  data-asset-status={asset.status}
+  data-asset-id={asset.id}
+  data-fbid={asset.fbid}
+  data-subject-verified={String(asset.subjectVerified)}
+/>

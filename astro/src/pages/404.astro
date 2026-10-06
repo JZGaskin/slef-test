@@ -1,19 +1,25 @@
 ---
 import Base from '../layouts/Base.astro';
+import { SITE, REGISTER_CTA } from '../data/site';
 ---
 
 <Base
-  title="Page Not Found | Little Eagle Football & Cheer"
-  description="That page could not be found. Head back to Little Eagle Football & Cheer."
+  title={`Page not found | ${SITE.name}`}
+  description="That page could not be found. Head back to Somerset Little Eagle Football."
   noindex={true}
 >
-  <main class="main-content container">
-    <!-- This page is new in the rebuild, so it is the one place the new stack's
-         Tailwind utilities are used directly. -->
-    <section class="text-center py-12 px-5">
-      <h1 class="text-3xl font-bold mb-4 text-slef-ink">Page not found</h1>
-      <p class="mb-6">Sorry, we couldn't find that page.</p>
-      <a class="cta-button" href="/">Back to Home</a>
-    </section>
+  <main id="main" class="page">
+    <div class="wrap notfound">
+      <p class="eyebrow">Error 404</p>
+      <h1>We couldn’t find that page</h1>
+      <p class="lede" style="margin-inline:auto">
+        The link may be old, or the page may have moved. Try the homepage, or register for the
+        season.
+      </p>
+      <div class="btn-row" style="justify-content:center">
+        <a class="btn btn--primary" href="/">Back to the homepage</a>
+        <a class="btn btn--outline" href={REGISTER_CTA.href}>Register</a>
+      </div>
+    </div>
   </main>
 </Base>

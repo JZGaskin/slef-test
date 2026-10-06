@@ -7,44 +7,45 @@ import '../styles/global.css';
 interface Props {
   /** Full <title>. */
   title: string;
-  /** Meta description (every page had none before). */
+  /** Meta description. */
   description: string;
   /** Nav key to mark as the current page. */
   active?: string;
-  /** Keep the live home-page nav wrapper (see Header.astro). */
-  wrapNav?: boolean;
-  /** Keep the page out of search results (confirmation pages). */
+  /** Keep the page out of search results (thank-you, 404, styleguide). */
   noindex?: boolean;
+  /** Social preview image, absolute path under /images. */
+  ogImage?: string;
 }
 
-const { title, description, active = '', wrapNav = false, noindex = false } = Astro.props;
+const {
+  title,
+  description,
+  active = '',
+  noindex = false,
+  ogImage = '/images/redesign/hero-cover.jpg',
+} = Astro.props;
 
-// Draft/branch builds are served from a non-production URL and MUST never be indexed.
-// The flag is set for branch + Deploy Preview contexts in netlify.toml (and by the
-// draft-publish script for a direct draft deploy). The production build never sets it,
-// so production output is byte-for-byte unchanged by this switch.
+// Draft/branch builds are served from a non-production URL and MUST never be
+// indexed. Set by netlify.toml for the branch/deploy-preview contexts, and by
+// the redesign publisher for a direct draft deploy. Production never sets it.
 const DRAFT = (import.meta.env.PUBLIC_NOINDEX ?? process.env.PUBLIC_NOINDEX) === 'true';
 
-// The build emits real .html files (build.format = 'file') so that the existing
-// /pages/about URL keeps working. The canonical URL must therefore be the clean
-// public form, not the built filename.
+// The build emits real .html files (build.format = 'file'), so the canonical URL
+// is the clean public form, not the built filename.
 const cleanPath = Astro.url.pathname.replace(/index\.html$/, '').replace(/\.html$/, '');
 const canonical = new URL(cleanPath, SITE.url).href;
 
-// Structured data: tells search engines and social previews what this
-// organisation is. Nothing here is private and nothing is invented.
+// Structured data: what this organisation is. Nothing private, nothing invented.
 const schema = {
   '@context': 'https://schema.org',
   '@type': 'SportsOrganization',
   name: SITE.name,
   alternateName: SITE.shortName,
+  description: `${SITE.descriptor}. Youth football and cheer, grades ${SITE.grades}, season ${SITE.season}.`,
   url: SITE.url,
   logo: `${SITE.url}/images/SLEFLogo5.png`,
   sport: ['American Football', 'Cheerleading'],
-  areaServed: {
-    '@type': 'AdministrativeArea',
-    name: 'Somerset County, Pennsylvania',
-  },
+  areaServed: { '@type': 'AdministrativeArea', name: 'Somerset County, Pennsylvania' },
   sameAs: [SITE.facebook],
 };
 ---
@@ -63,33 +64,70 @@ const schema = {
       <meta name="robots" content={DRAFT ? 'noindex, nofollow' : 'noindex, follow'} />
     )}
 
+    <!-- Self-hosted variable fonts: no third-party font CDN, no layout shift. -->
+    <link rel="preload" href="/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={SITE.name} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={`${SITE.url}/images/img-1.jpg`} />
+    <meta property="og:image" content={new URL(ogImage, SITE.url).href} />
     <meta name="twitter:card" content="summary_large_image" />
 
     <script type="application/ld+json" set:html={JSON.stringify(schema)} />
   </head>
   <body>
-    <Header active={active} wrapNav={wrapNav} />
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header active={active} />
     <slot />
     <Footer />
+
+    <!-- Mobile navigation. Inline and tiny on purpose: no framework, no bundle.
+         The full navigation is also repeated in the footer, so every destination
+         is reachable with JavaScript disabled. -->
     <script is:inline>
-      document.addEventListener('DOMContentLoaded', function () {
-        var hamburger = document.querySelector('.hamburger');
-        var navLinks = document.querySelector('.nav-links');
-        if (hamburger && navLinks) {
-          hamburger.addEventListener('click', function () {
-            var open = navLinks.classList.toggle('active');
-            hamburger.setAttribute('aria-expanded', open ? 'true' : 'false');
-          });
+      (function () {
+        var toggle = document.querySelector('[data-nav-toggle]');
+        var panel = document.querySelector('[data-nav-panel]');
+        if (!toggle || !panel) return;
+        var open = false;
+
+        function setOpen(next) {
+          open = next;
+          toggle.setAttribute('aria-expanded', String(open));
+          panel.setAttribute('data-open', String(open));
+          document.body.classList.toggle('nav-open', open);
+          if (open) {
+            var first = panel.querySelector('a');
+            if (first) first.focus();
+          }
         }
-        var year = document.getElementById('year');
-        if (year) year.textContent = new Date().getFullYear();
-      });
+
+        toggle.addEventListener('click', function () { setOpen(!open); });
+
+        panel.addEventListener('click', function (event) {
+          if (event.target.closest('a')) setOpen(false);
+        });
+
+        document.addEventListener('keydown', function (event) {
+          if (!open) return;
+          if (event.key === 'Escape') { setOpen(false); toggle.focus(); return; }
+          if (event.key !== 'Tab') return;
+          var items = panel.querySelectorAll('a[href]');
+          if (!items.length) return;
+          var first = items[0];
+          var last = items[items.length - 1];
+          if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+          else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+        });
+
+        // A resize into the desktop layout must not leave the body scroll-locked.
+        window.addEventListener('resize', function () {
+          if (window.innerWidth >= 1024 && open) setOpen(false);
+        });
+      })();
     </script>
   </body>
 </html>

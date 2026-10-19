@@ -26,7 +26,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const dir = path.resolve(process.argv[2] ?? 'dist');
+// The gate judges what SHIPS. `dist` is whichever bundle the last build wrote
+// (the draft, in build-redesign.sh), so prefer the production bundle.
+const fallback = fs.existsSync('build/dist-prod') ? 'build/dist-prod' : 'dist';
+const dir = path.resolve(process.argv[2] ?? fallback);
 if (!fs.existsSync(dir)) {
   console.error(`check-assets: no such directory: ${dir}`);
   process.exit(2);
@@ -69,9 +72,21 @@ const placeholders = [];
 for (const page of pages) {
   const html = fs.readFileSync(page, 'utf8');
   for (const m of html.matchAll(/data-asset-status="temporary-placeholder"[^>]*/g)) {
-    const tag = m[0];
+    // The slice above begins at the attribute, so a `hidden` attribute that
+    // precedes it is not in it. Take the WHOLE enclosing element instead.
+    const open = html.lastIndexOf('<', m.index);
+    const close = html.indexOf('>', m.index);
+    const tag = open >= 0 && close > open ? html.slice(open, close + 1) : m[0];
     const attr = (name) => (tag.match(new RegExp(`${name}="([^"]*)"`)) ?? [])[1];
-    placeholders.push({ page: path.basename(page), id: attr('data-asset-id') || '(unnamed)', note: attr('data-asset-note') });
+    placeholders.push({
+      page: path.basename(page),
+      id: attr('data-asset-id') || '(unnamed)',
+      note: attr('data-asset-note'),
+      // A `hidden` declaration renders nothing, occupies no space and is absent
+      // from the accessibility tree. It is internal asset tracking, not content a
+      // visitor can see, so it must not block a launch — but it is still reported.
+      hidden: /\shidden(\s|=|\/?>)/.test(tag),
+    });
   }
 }
 const missingProvenance = images.filter(
@@ -89,7 +104,10 @@ console.log(`  pages scanned      : ${pages.length}`);
 console.log(`  <img> elements     : ${images.length}`);
 console.log(`  approved assets    : ${images.filter((i) => i.status === 'approved').length}`);
 console.log(`  TEMPORARY assets   : ${temporary.length}`);
-console.log(`  PLACEHOLDERS       : ${placeholders.length}`);
+console.log(`  PLACEHOLDERS       : ${placeholders.length}` +
+  (placeholders.some((p) => p.hidden)
+    ? ` (${placeholders.filter((p) => p.hidden).length} hidden internal declaration(s), not visitor-facing)`
+    : ''));
 
 let failed = false;
 const fail = (label, items, fmt) => {
@@ -99,8 +117,9 @@ const fail = (label, items, fmt) => {
   for (const i of items.slice(0, 20)) console.error(`    ${fmt(i)}`);
 };
 
+const visiblePlaceholders = placeholders.filter((p) => !p.hidden);
 fail('temporary (unapproved) imagery in the build', temporary, (i) => `${i.id} ${i.src} — fbid ${i.fbid}, used on ${i.page}`);
-fail('declared placeholders standing in for missing photography', placeholders, (i) => `${i.id} on ${i.page}${i.note ? ` — ${i.note}` : ''}`);
+fail('VISIBLE declared placeholders standing in for missing photography', visiblePlaceholders, (i) => `${i.id} on ${i.page}${i.note ? ` — ${i.note}` : ''}`);
 fail('images with no declared asset status', undeclared, (i) => `${i.src} on ${i.page}`);
 fail('temporary images with no provenance (fbid)', missingProvenance, (i) => `${i.src} on ${i.page}`);
 fail('images with no alt attribute', missingAlt, (i) => `${i.src} on ${i.page}`);
@@ -110,8 +129,8 @@ fail('images with no loading attribute', missingLoading, (i) => `${i.src} on ${i
 if (failed) {
   console.error(
     `\nPRODUCTION BLOCKED — ${temporary.length} temporary Facebook-sourced photograph(s)` +
-      (placeholders.length ? ` and ${placeholders.length} declared placeholder(s)` : '') +
-      ` are in use (${[...byId.keys(), ...placeholders.map((p) => p.id)].join(', ')}).\n` +
+      (visiblePlaceholders.length ? ` and ${visiblePlaceholders.length} visible declared placeholder(s)` : '') +
+      ` are in use (${[...byId.keys(), ...visiblePlaceholders.map((p) => p.id)].join(', ')}).\n` +
       'Each photograph must be either approved in writing by the organization or replaced with a\n' +
       'client-supplied original, and then flipped to status "approved" in src/data/images.ts.\n' +
       'Each placeholder must be replaced by real photography of the programme it describes.\n' +

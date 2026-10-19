@@ -63,14 +63,19 @@ const { active = '' } = Astro.props;
       <span class="nav__toggle-bar"></span>
     </button>
   </div>
-
-  <div class="nav__panel" id="mobile-nav" data-open="false" data-nav-panel>
-    <ul aria-label="Primary">
-      {NAV.map((item) => (
-        <li><a href={item.href}>{item.label}</a></li>
-      ))}
-      <li><a href="#resources">Parent resources</a></li>
-    </ul>
-    <a class="btn btn--primary btn--block" href={REGISTER_CTA.href}>{REGISTER_CTA.label} for the 2026 season</a>
-  </div>
 </header>
+
+<!-- The panel is a SIBLING of <header>, not a child. It is position:fixed, and the
+     header carries backdrop-filter, which makes the header the containing block for
+     fixed-position descendants. Nested inside, `inset: var(--header-h) 0 0 0` measured
+     against the 72px header instead of the viewport and collapsed the panel to 72px —
+     which is why only the first link (Football) was reachable. Keeping it outside the
+     filtered ancestor restores the viewport containing block with no CSS change. -->
+<div class="nav__panel" id="mobile-nav" data-open="false" data-nav-panel>
+  <ul aria-label="Primary">
+    {NAV.map((item) => (
+      <li><a href={item.href}>{item.label}</a></li>
+    ))}
+  </ul>
+  <a class="btn btn--primary btn--block" href={REGISTER_CTA.href}>{REGISTER_CTA.label}</a>
+</div>

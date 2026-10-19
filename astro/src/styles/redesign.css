@@ -111,6 +111,20 @@
   /* Layout */
   --wrap: 1160px;
   --wrap-narrow: 780px;
+  /* The hero frame is deliberately WIDER than the copy shell so the artwork keeps its
+     dramatic right-side presence, but it is capped short of the viewport so the band
+     always shows a gutter. It never goes below the shell, and below the shell width the
+     min(100%, …) hands the frame straight back to the viewport (phones/tablets stay
+     full-bleed, as designed).
+
+     The cap is deliberately BELOW the band's own width. The photograph is 1672×941
+     (aspect 1.777) and the band is much wider than that, so `object-fit: cover` scales to
+     the WIDTH and crops the picture VERTICALLY — the wider the frame, the more is cut off
+     the bottom, where the cheer block is. Narrowing the cap is therefore the only lever
+     that reveals MORE of the photograph, and it also stops the crop from clipping the top
+     of the player's helmet. At 1300px the whole picture fits at 1920×1080 and ~91% of its
+     height shows at 1440×900 (it was 86% at 1376px). Widening it would cut more away. */
+  --hero-media: 1300px;
   --gutter: 1.25rem;
   --header-h: 72px;
 
@@ -404,6 +418,16 @@ img { max-width: 100%; height: auto; }
   width: auto;
   height: 46px;
   flex: none;
+  /* A FIXED-SIZE, RATIO-BEARING image must not inherit the global `img { max-width: 100% }`.
+     That rule exists to stop large photographs overflowing, but here the HEIGHT is pinned by
+     the rule above, so a width clamp does not scale the mark down — it SQUASHES it. This is
+     how the header logo compressed to 62x46 (ratio 1.35 instead of its native 1.478) on a
+     320px phone the moment the header CTA label grew from "Register" to "Registration" and
+     the row went a few pixels over capacity. `max-width: none` removes the clamp; and
+     `object-fit: contain` guarantees the mark is letterboxed rather than distorted even if
+     some future box is ever smaller than it. The aspect ratio is no longer negotiable. */
+  max-width: none;
+  object-fit: contain;
 }
 .brand__name {
   font-family: var(--font-display);
@@ -413,6 +437,15 @@ img { max-width: 100%; height: auto; }
   letter-spacing: -0.005em;
   text-transform: uppercase;
   color: var(--on-dark);
+  /* THE BRAND LOCKUP IS ONE LINE, ALWAYS. `.brand` is a shrinkable flex item (`min-width: 0`)
+     with `margin-right: auto`, so whenever the header row runs out of room the browser's default
+     is to WRAP the organization name before it will overflow — which split the approved lockup
+     into "SOMERSET LITTLE" / "EAGLE" / "FOOTBALL & CHEER" and read to the client as a compressed,
+     broken logo. `nowrap` makes the lockup's intrinsic width non-negotiable: min-content becomes
+     the full line, so the flex algorithm can no longer shrink it into a second line. The tagline
+     inherits this, so it cannot break either. It is the guarantee; the breakpoint below is what
+     keeps the row able to honour it. */
+  white-space: nowrap;
 }
 .brand__name span {
   display: block;
@@ -421,7 +454,24 @@ img { max-width: 100%; height: auto; }
   letter-spacing: 0.2em;
   color: var(--orange);
 }
-@media (max-width: 479px) { .brand__name { display: none; } }
+/* The breakpoint is where the ONE-LINE lockup genuinely stops fitting, measured rather than
+   guessed. Between 480px and 1023px the header row carries the brand, the Registration button
+   (141.8px) and the 46px menu toggle: 68 (mark) + 12 (inner gap) + 230.2 (name) + 16 + 141.8 +
+   16 + 46 = 530.2px of demand plus 40px of gutter = ~570px. Below that the row is over capacity
+   by construction, and with `nowrap` now in force the name would overflow INTO the button rather
+   than wrap — strictly worse. So the wordmark is shown only where it can be shown on one line
+   (600px leaves ~30px of headroom at the boundary); on anything narrower the mark carries the
+   brand alone, which is the same treatment phones already had at 479px. Measured wrap band before
+   this fix: 480-568px, of which 540-568 was the regression introduced by the longer CTA label. */
+@media (max-width: 599px) { .brand__name { display: none; } }
+
+/* The mark is rigid now (above), so the header row has to FIT rather than squeeze it. On the
+   narrowest phones the longer, now unbreakable CTA label ("Registration") pushes the row a few
+   pixels over capacity — measured at 320px: 68 (mark) + 141.8 (button) + 46 (menu) + 2x16 (gap)
+   = 287.8px of demand in a 280px content box. Reclaim those pixels from the row GAP, which is
+   invisible whitespace, so neither the logo nor the 46px menu button has to give. Nothing here
+   touches the button, its wording, the nav, or the header height. */
+@media (max-width: 359px) { .site-header__inner { gap: var(--s-3); } }
 
 .nav { display: none; }
 .nav__list { display: flex; align-items: center; gap: var(--s-1); list-style: none; margin: 0; padding: 0; }
@@ -537,13 +587,50 @@ body.nav-open { overflow: hidden; }
   background-color: var(--ink);
   color: var(--on-dark);
 }
-.hero__media { position: absolute; inset: 0; z-index: -2; }
+/* The dark band stays full-bleed, but the PHOTOGRAPH is contained in the same centred
+   shell as the header, the main column and the hero copy. Running the picture to the
+   viewport edge made the page read right-heavy: the copy starts at the shell on the
+   left while the artwork had no matching stop on the right. Containing it gives the
+   right side the same gutter the left framing has. Below the shell width the max-width
+   has no effect, so narrow screens keep the full-bleed band they were designed with.
+   The media still fills the band's full height — only the horizontal framing changes. */
+.hero__media {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  right: 0;
+  z-index: -2;
+  width: 100%;
+  /* The artwork is held to a centred frame that is wider than the copy shell (the
+     drama) but never touches the viewport edge (the gutter), and never narrower than
+     the shell. — gutter = one page gutter, so the hero matches the page's own framing.
+     The clamp floor keeps the frame at least as wide as the shell; the min(100%, …)
+     releases it to the viewport below that width, which is why 1160px and down are
+     unchanged. */
+  max-width: min(100%, clamp(var(--wrap), calc(100% - 2 * var(--gutter)), var(--hero-media)));
+  margin-inline: auto;
+  overflow: hidden;
+}
 .hero__media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: 50% 40%;
   display: block;
+}
+/* The frame (1300px at most) is narrower than the photograph's own height-to-width
+   would need at a full-height band, so on a large desktop `cover` scales the picture
+   to the frame's HEIGHT and a few dozen source columns fall outside the frame. Align
+   the picture to the frame's right edge there, so that trim is taken entirely from the
+   far left — the near-black side, under the scrim and behind the copy — and the right
+   edge of the player and the cheer block, which is the reason the frame is this wide at
+   all, is never trimmed. This is desktop-only: at the shell width and below the picture
+   fills the frame the other way, and a tall narrow screen wants a centred crop. The
+   markup carries the centred base crop inline, hence the !important. */
+@media (min-width: 1224px) {
+  .hero__media img {
+    object-position: 100% 40% !important;
+  }
 }
 .hero__scrim {
   position: absolute;
@@ -563,13 +650,38 @@ body.nav-open { overflow: hidden; }
 .hero h1 {
   margin: var(--s-3) 0 0;
   color: var(--on-dark);
-  font-size: clamp(2.3rem, 1.1rem + 4.9vw, 4.4rem);
+  /* H1 TYPOGRAPHY (2026-10-08). The organization name is one semantic <h1> set as THREE
+     deliberate lines — SOMERSET / LITTLE EAGLE / FOOTBALL. Before this, three uppercase
+     words on one white field ran together and read as a single mass, so the hierarchy
+     (place / brand / program) was invisible.
+
+     Size: the desktop cap came down from 4.4rem (70.4px) to 3.9rem (62.4px), ≈11%. Three
+     lines at the old size read as a wall and ate the hero's air; the whole clamp was scaled
+     by the same factor so the curve keeps its shape and still meets the cap at the same
+     ~1077px viewport. The top of the range is the only part the brief asked to change, and
+     scaling uniformly is what keeps tablet/mobile proportions intact.
+
+     Line-height 0.95 is deliberate: all three lines are all-caps with no descenders, so the
+     only collision risk is cap-to-cap, and QA measures that the line boxes never overlap.
+
+     The parts are BLOCKS at every width (see `.hero__title-line`). Each phrase fits on one
+     line even at 320px, so this is the natural break at every viewport — tablet and phone
+     get the same three-line read with no forced awkward wrap. */
+  font-size: clamp(2.05rem, 0.98rem + 4.34vw, 3.9rem);
   font-weight: 900;
-  line-height: 0.97;
+  line-height: 0.95;
   letter-spacing: -0.028em;
   text-transform: uppercase;
   text-wrap: balance;
 }
+/* One line each. The phrases are separated by real spaces in the text flow (so the
+   accessible name is the full organization name) — as blocks, those whitespace nodes
+   collapse away and never render as stray gaps between the lines. */
+.hero__title-line { display: block; }
+/* The brand phrase carries the brand orange; the location and the program descriptor stay
+   white. Colour is the only thing that differs between the three lines — same face, same
+   weight, same size — so the hierarchy is legible at a glance without a redesign. */
+.hero__title-line--brand { color: var(--orange); }
 .hero__lead {
   margin: var(--s-4) 0 0;
   max-width: 42ch;
@@ -894,7 +1006,9 @@ body.nav-open { overflow: hidden; }
 .site-footer a { text-decoration: none; }
 .site-footer a:hover { text-decoration: underline; }
 .site-footer__brand { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-2); }
-.site-footer__brand img { height: 46px; width: auto; }
+/* Same fixed-size, ratio-bearing mark as the header: the global `img { max-width: 100% }` must
+   never be allowed to clamp its width while its height is pinned. */
+.site-footer__brand img { height: 46px; width: auto; max-width: none; object-fit: contain; }
 .site-footer__name { font-family: var(--font-display); font-weight: 800; color: var(--on-dark); text-transform: uppercase; letter-spacing: 0.01em; line-height: 1.05; }
 .site-footer__name span { display: block; font-weight: 600; font-size: 0.6875rem; letter-spacing: 0.2em; color: var(--orange); }
 .site-footer__bar {

@@ -63,19 +63,39 @@ const PROGRAM_ITEMS = [
 >
   <main id="main">
     <!-- 1. HERO ============================================================
-         One large human sports photograph with the copy over it. The picture is
-         absolutely positioned behind the content, so the text can never stretch
-         it, and the file itself is a declared 1.667x resample so the browser
-         never displays it above its own pixels (see src/data/images.ts). -->
+         One large human sports photograph with the copy over it. The dark band is
+         full-bleed; the picture inside it is held to a centred frame that is wider
+         than the copy shell (so the artwork keeps its right-side presence and the text
+         never sits on the crop edge) but always one page-gutter clear of the viewport
+         edge. The frame is `--hero-media` wide at most, the copy shell at least, and
+         hands itself back to the viewport below the shell width, so phones and tablets
+         stay full-bleed.
+
+         The cap is deliberately modest. The photograph is much wider than it is tall
+         (1672x941), so `object-fit: cover` scales it to the frame's WIDTH and crops the
+         picture vertically — a wider frame means more of the bottom, where the cheer
+         block is, is cut away. Keeping the frame at 1300px shows the whole photograph at
+         1920x1080 and ~91% of its height at 1440x900, and keeps the player's helmet clear
+         of the top edge. At a full-height band the picture is instead cropped
+         horizontally, so a desktop rule aligns it to the frame's right edge: the trim
+         comes off the dark left, and the player and the cheer block keep their right edge.
+
+         The picture is positioned behind the content, so the text can
+         never stretch it (see src/styles/redesign.css §7 and src/data/images.ts). -->
     <section class="hero" id="top">
       <div class="hero__media">
-        <AppImage id="footballHero" loading="eager" fetchpriority="high" sizes="100vw" position="50% 40%" />
+        <AppImage id="footballHero" loading="eager" fetchpriority="high" sizes="(min-width: 1364px) 1300px, (min-width: 1224px) calc(100vw - 4rem), 100vw" position="50% 40%" />
       </div>
       <div class="hero__scrim" aria-hidden="true"></div>
       <div class="wrap hero__inner">
         <div class="hero__panel">
           <p class="eyebrow">{SITE.league}</p>
-          <h1>Somerset Little Eagle Football</h1>
+          {/* One semantic h1, read by assistive tech as the whole organization name.
+              Its three parts are set as three deliberate lines (see `.hero__title-line`
+              in redesign.css) so the words stop running together: Somerset is the place,
+              Little Eagle is the brand, Football is the program. The parts are separated
+              by real spaces in the text flow, so the accessible name is unchanged. */}
+          <h1 class="hero__title"><span class="hero__title-line">Somerset</span>{' '}<span class="hero__title-line hero__title-line--brand">Little Eagle</span>{' '}<span class="hero__title-line">Football</span></h1>
           <p class="hero__lead">
             Developmental youth football and cheer in Somerset, Pennsylvania — a season
             built by the families who show up for it.
@@ -86,8 +106,11 @@ const PROGRAM_ITEMS = [
             <li>{SITE.leagueShort}</li>
           </ul>
           <div class="btn-row">
-            <a class="btn btn--primary btn--lg" href={REGISTER}>Register for the 2026 season</a>
-            <a class="btn btn--light" href="#programs">Explore programs</a>
+            {/* ONE hero action only: Registration. Football and Cheer sit directly below the
+                hero, both are in the navigation, and on mobile a second button costs ~64px
+                of vertical space for no extra route. Do not re-add a second CTA without an
+                explicit decision. */}
+            <a class="btn btn--primary btn--lg" href={REGISTER}>Registration</a>
           </div>
         </div>
       </div>
@@ -104,15 +127,17 @@ const PROGRAM_ITEMS = [
               <p>{item.copy}</p>
               <a href={item.href}>{item.link}</a>
               {item.id === 'cheer' && (
+                /* The cheer photograph is still missing. The visible placeholder bar was
+                   removed at Zach's request (2026-10-19) because it read as unfinished;
+                   this declaration stays, hidden, so `npm run check:assets` keeps
+                   reporting the gap instead of passing falsely. Do not delete it until a
+                   cheer photograph with permission actually exists. */
                 <span
-                  class="ph-bar"
+                  hidden
                   data-asset-status="temporary-placeholder"
                   data-asset-id="cheerMedia"
-                  data-asset-note="No cheer photograph exists with permission to publish; this is a declared placeholder and it blocks promotion."
-                >
-                  <span class="ph-bar__label">Cheer</span>
-                  <span class="ph-bar__note">Photography to come</span>
-                </span>
+                  data-asset-note="No cheer photograph exists with permission to publish. Hidden internal asset-tracking marker: it renders nothing and is not a visitor-facing placeholder."
+                />
               )}
             </article>
           ))}
@@ -144,7 +169,7 @@ const PROGRAM_ITEMS = [
       <div class="wrap">
         <div class="wrap-narrow">
           <p class="eyebrow">Registration</p>
-          <h2>Register for the 2026 season</h2>
+          <h2>Register for the season</h2>
           <p class="lede">
             One form for football and cheer — it shows current availability and fees.
           </p>
@@ -152,7 +177,7 @@ const PROGRAM_ITEMS = [
         <div class="register__actions">
           <a class="action action--primary" href={REGISTER}>
             <span class="action__label">Register for Football</span>
-            <span class="action__note">Opens the 2026 registration form</span>
+            <span class="action__note">Opens the registration form</span>
           </a>
           <a class="action" href={REGISTER}>
             <span class="action__label">Register for Cheer</span>

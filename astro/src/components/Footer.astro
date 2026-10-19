@@ -1,7 +1,5 @@
 ---
 import { SITE, FOOTER_NAV, REGISTER_CTA, FACEBOOK_ICON_PATH } from '../data/site';
-
-const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer">
@@ -29,7 +27,7 @@ const year = new Date().getFullYear();
     <div>
       <h2>Get started</h2>
       <ul>
-        <li><a href={REGISTER_CTA.href}>{REGISTER_CTA.label} for the 2026 season</a></li>
+        <li><a href={REGISTER_CTA.href}>{REGISTER_CTA.label}</a></li>
         <li><a href="/physical">Submit a physical</a></li>
         <li><a href="/contact">Send us a message</a></li>
       </ul>
@@ -43,7 +41,7 @@ const year = new Date().getFullYear();
   </div>
 
   <div class="wrap site-footer__bar">
-    <p>&copy; {year} {SITE.name}. All rights reserved.</p>
+    <p>&copy; {SITE.name}. All rights reserved.</p>
     <p>
       Information is collected only through the registration, physical-submission and contact
       forms.

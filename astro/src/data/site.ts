@@ -52,7 +52,14 @@ export const FOOTER_NAV = [
 
 // The one thing the site exists to cause, repeated in the header, the hero, the
 // registration band and the footer.
-export const REGISTER_CTA = { href: '/register', label: 'Register' };
+//
+// EVERGREEN (2026-10-08). The label is the NOUN "Registration", not "Register for
+// the 2026 season". Registration is not open all year — the MachForm page carries
+// the current open/closed state — so a year in the label is wrong for most of the
+// year and has to be edited every season. One label, one destination, no annual
+// maintenance. The season-specific actions ("Register for Football" / "Register for
+// Cheer") keep their verbs and are already year-free.
+export const REGISTER_CTA = { href: '/register', label: 'Registration' };
 
 // County venues, reproduced verbatim from the live /pages/fields page. The MAP
 // links are still the original goo.gl short links: they work, and rewriting them

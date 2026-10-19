@@ -40,6 +40,17 @@ npm run build
 rm -rf build/dist-prod
 mkdir -p build
 cp -a dist build/dist-prod
+
+# /styleguide is an INTERNAL review page. It exists in the draft bundle so the
+# design can be reviewed, and it must never ship to production. Strip it from the
+# production bundle here and refuse to continue if it is still present — a silent
+# failure of the strip would publish an internal page.
+rm -f build/dist-prod/styleguide.html
+if [ -e build/dist-prod/styleguide.html ]; then
+  echo "FAIL /styleguide survived the production strip" >&2
+  exit 1
+fi
+echo "   -> /styleguide excluded from the production bundle"
 echo "   -> build/dist-prod ($(find build/dist-prod -type f | wc -l) files, $(du -sh build/dist-prod | cut -f1))"
 
 echo "== draft (noindex) build =="
@@ -85,3 +96,4 @@ echo
 echo "production safety:"
 printf '  noindex meta pages : %s (must be 0)\n' "$(grep -rl 'noindex, nofollow' build/dist-prod --include='*.html' | wc -l)"
 printf '  sitemap files      : %s\n' "$(ls build/dist-prod | grep -c sitemap || true)"
+printf '  /styleguide page   : %s (must be 0)\n' "$(ls build/dist-prod/styleguide.html 2>/dev/null | wc -l)"

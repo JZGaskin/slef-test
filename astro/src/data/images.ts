@@ -27,24 +27,25 @@
 //   4. delete the entry from `REJECTED_ASSETS` if it was listed there.
 // No component changes. No copy changes. One data file.
 //
-// THE HERO AND `previewUpscale` (read this before judging the hero's sharpness)
+// THE HERO: THE APPROVED MASTER vs THE FILE THE BROWSER GETS
 // ----------------------------------------------------------------------------
-// The strongest HUMAN sports photograph the organization's public page yields is
-// 960x540. The approved mock-up's hero is a large photographic field, and the
-// design-review instruction is explicit that visual suitability outranks perfect
-// source resolution for the PRIVATE preview — while also saying not to upscale
-// irresponsibly, and not to let the resolution rule force a weak distant-field
-// photograph into the hero.
+// The hero is the one photograph the organization has approved as a master. That
+// master is `public/images/football-hero.png` — 1774x887, 2.0 MB — and it is
+// NOT a web asset: as a PNG it is 8.5x the hero transfer budget this site enforces
+// (scripts/qa-redesign.mjs, HERO_BUDGET_KB). Photographic PNG is the wrong
+// container, and re-compressing harder does not fix it (the best PNG rendition of
+// this frame is ~3 MB; a 256-colour one is still 695 KB).
 //
-// So the upscale is DECLARED rather than hidden: `football-hero.jpg` is a one-time
-// 1.667x Lanczos3 resample of that 960x540 frame to 1600x900, and `previewUpscale`
-// records the factor on the asset. Two consequences, both intended:
-//   * the browser never upscales it (the rendered QA asserts scale <= 1.0 at every
-//     measured viewport, because the file now covers a full-bleed band up to
-//     1600px wide at 1:1), and
-//   * the asset is still `temporary-facebook-asset`, so the promotion gate refuses
-//     it exactly as before. A resampled web copy is not a licensed original.
-// The clean fix remains the same: one 1600px+ original from the organization.
+// So the hero is DELIVERED as a DECLARED re-encode of that master at its native
+// resolution: same frame, same dimensions, no resample and no crop, JPEG at web
+// quality. The derivation lives on the asset (`sourceMaster`) rather than in
+// someone's memory, and the master itself stays in the tree byte-identical at the
+// path the organization uploaded it to, so the delivery file can always be
+// re-derived and re-checked.
+//
+// An earlier pass used `previewUpscale` here, because that hero was a 1.667x
+// Lanczos resample of a 960x540 web copy. There is no resample now, so the field is
+// absent; it stays in the type for any future asset that must be enlarged.
 //
 // SUBJECT VERIFICATION
 // --------------------
@@ -69,12 +70,20 @@ export interface ImageAsset {
   /** Downscaled variants for `srcset` (never upscaled). */
   variants: ImageVariant[];
   alt: string;
-  source: 'facebook-page';
-  /** Facebook media id as it appears in the photo URL — how to find it again. */
-  fbid: string;
+  source: 'facebook-page' | 'client-supplied';
+  /** Facebook media id as it appears in the photo URL — how to find it again.
+   *  Absent for a client-supplied original, which has no Facebook identity. */
+  fbid?: string;
   /** Where on the page it was captured from. */
   context: string;
   status: 'temporary-facebook-asset' | 'approved';
+  /** Who cleared publication, and when. Recorded ONLY from a relayed approval —
+   *  never inferred from public availability. */
+  approvedBy?: string;
+  approvedOn?: string;
+  approvalScope?: string;
+  /** How the approval reached Z33. Kept literal: no method is invented. */
+  approvalEvidence?: string;
   subjectVerified: boolean;
   verifiedBy: string;
   credit: string;
@@ -83,41 +92,56 @@ export interface ImageAsset {
    * copy this file was produced from. Absent means the file is as-captured.
    */
   previewUpscale?: number;
+  /**
+   * Present when the delivered file is a DERIVATIVE of an approved master that also
+   * lives in the tree (never a resample: see the header comment). Records the
+   * master's path, exact bytes and digest so the delivery file is reproducible.
+   */
+  sourceMaster?: { path: string; sha256: string; bytes: number; note: string };
 }
 
 const FB_CREDIT = 'Somerset Little Eagle Football official Facebook page';
 const VISION = 'local vision-language model (gemma4:12b); description recorded in vision/descriptions.json';
 
 export const IMAGES: Record<string, ImageAsset> = {
-  // HERO — the club's own players, in the club's black-and-orange uniforms, on the
-  // field with a crowd and a tent behind them. This is the only full-resolution
-  // frame the public page yields that is unmistakably this organization AND
-  // recognisably football being played, so it is the emotional image the approved
-  // mock-up calls for. (The previous hero was a distant night field panorama — it
-  // is now the mission image, where distance reads as "where we play".)
+  // HERO — the organization's approved master: a Little Eagle football player
+  // carrying the ball, with cheerleaders holding orange and black pom-poms to his
+  // right, under a warm evening sky. This is the SECOND approved hero: the first
+  // (a white-helmeted player above cheerleaders under a golden sky) was replaced on
+  // 2026-10-08 when the organization uploaded `football-hero.png`; its files stay in
+  // the tree byte-identical as the record of that frame. The subject was verified
+  // from the picture itself (crops through the local vision-language model), not from
+  // a filename — which is why the alt text names no uniform colour: the model
+  // reported "white" from one crop and "orange" from another, so only what every
+  // crop agreed on is asserted. The delivered file is a declared re-encode of the
+  // master at native size — see the header comment above.
   footballHero: {
     id: 'footballHero',
-    src: '/images/redesign/football-hero.jpg',
-    width: 1600,
-    height: 900,
+    src: '/images/football-hero-1774.jpg',
+    width: 1774,
+    height: 887,
     // NO downscaled variant, deliberately. srcset selects by WIDTH, so on a phone the
-    // browser would take a 800x450 file for a 390x574 band and then cover-scale it to
-    // 1.28x — a real upscale, in the exact place the design is most photographic. The
-    // hero therefore declares one candidate only: the 1600x900 file, which covers a
-    // full-bleed band up to 1600px wide at 1:1 and crops rather than enlarging on
+    // browser would take a smaller file for a tall band and then cover-scale it up —
+    // a real upscale, in the exact place the design is most photographic. The hero
+    // therefore declares one candidate only: the 1774x887 file, which covers a
+    // full-bleed band up to 1774px wide at 1:1 and crops rather than enlarging on
     // phones. The cost is that a phone downloads the hero in full; the benefit is that
     // "the hero is never displayed above its own pixels" is true at EVERY viewport,
     // not just the ones the QA happens to measure.
     variants: [],
-    alt: 'Young Little Eagle football players in black and orange uniforms on the grass at the field, with a crowd and a tent behind them.',
-    source: 'facebook-page',
-    fbid: '1429402305252657',
-    context: 'the organization’s Facebook photo (page photos / About), captured 2026-10-05',
-    status: 'temporary-facebook-asset',
+    alt: 'A Little Eagle football player in uniform carrying the ball, with cheerleaders holding orange and black pom-poms to his right under a warm evening sky.',
+    source: 'client-supplied',
+    context: 'uploaded by the organization to the astro-redesign branch at images/football-hero.png (commit 4e81a9cf)',
+    status: 'approved',
     subjectVerified: true,
     verifiedBy: VISION,
-    credit: FB_CREDIT,
-    previewUpscale: 1.667,
+    credit: 'Somerset Little Eagle Football',
+    sourceMaster: {
+      path: '/images/football-hero.png',
+      sha256: '28096ee83251cbf86ca74d8d426d834c7a3efe2d1582f950cf8356ce96ed4407',
+      bytes: 2113678,
+      note: '1774x887 PNG exactly as uploaded. The delivered file is the same frame at the same size, re-encoded as JPEG; no resample, no crop, no pixels invented.',
+    },
   },
   // MISSION — a night game on the home field, "EAGLES" in the end zones, players on
   // the turf and spectators behind the fence. Used small and beside copy, where the
@@ -133,7 +157,12 @@ export const IMAGES: Record<string, ImageAsset> = {
     source: 'facebook-page',
     fbid: '1457013789796532',
     context: 'the organization’s page cover photo (set a.553052540192666)',
-    status: 'temporary-facebook-asset',
+    status: 'approved',
+    approvedBy: 'Jeremy Wilsen, on behalf of the organization',
+    approvedOn: '2026-10-19',
+    approvalScope: 'use on the Little Eagle website, including the social-preview image',
+    approvalEvidence:
+      'relayed by Zach in the production-authorization message; the wording of Jeremy’s own message was not supplied to the agent',
     subjectVerified: true,
     verifiedBy: VISION,
     credit: FB_CREDIT,
@@ -152,7 +181,12 @@ export const IMAGES: Record<string, ImageAsset> = {
     source: 'facebook-page',
     fbid: '1292764688304379',
     context: 'the organization’s Facebook photo (page photos / About, vertical), captured 2026-10-05',
-    status: 'temporary-facebook-asset',
+    status: 'approved',
+    approvedBy: 'Jeremy Wilsen, on behalf of the organization',
+    approvedOn: '2026-10-19',
+    approvalScope: 'use on the Little Eagle website, including the social-preview image',
+    approvalEvidence:
+      'relayed by Zach in the production-authorization message; the wording of Jeremy’s own message was not supplied to the agent',
     subjectVerified: true,
     verifiedBy: VISION,
     credit: FB_CREDIT,

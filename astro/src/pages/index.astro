@@ -35,7 +35,7 @@ const PROGRAM_ITEMS = [
   {
     id: 'football',
     title: 'Youth Football',
-    copy: `Tackle football teams at grade levels ${SITE.grades}, playing in the ${SITE.leagueShort}. Fundamentals, safety and teamwork first.`,
+    copy: `Tackle football teams at grade levels ${SITE.grades}. Fundamentals, safety and teamwork first. Our K2 division (grades K\u20132) plays locally in Somerset. Grades 3\u20136 compete in the ${SITE.league} and travel to other league communities.`,
     href: REGISTER,
     link: 'Register for football',
   },
@@ -89,7 +89,7 @@ const PROGRAM_ITEMS = [
       <div class="hero__scrim" aria-hidden="true"></div>
       <div class="wrap hero__inner">
         <div class="hero__panel">
-          <p class="eyebrow">{SITE.league}</p>
+          <p class="eyebrow">Youth Football &amp; Cheer &bull; Somerset, Pennsylvania</p>
           {/* One semantic h1, read by assistive tech as the whole organization name.
               Its three parts are set as three deliberate lines (see `.hero__title-line`
               in redesign.css) so the words stop running together: Somerset is the place,
@@ -97,14 +97,14 @@ const PROGRAM_ITEMS = [
               by real spaces in the text flow, so the accessible name is unchanged. */}
           <h1 class="hero__title"><span class="hero__title-line">Somerset</span>{' '}<span class="hero__title-line hero__title-line--brand">Little Eagle</span>{' '}<span class="hero__title-line">Football</span></h1>
           <p class="hero__lead">
-            Developmental youth football and cheer in Somerset, Pennsylvania — a season
-            built by the families who show up for it.
+            Developmental youth football and cheer in Somerset, Pennsylvania.
           </p>
           <ul class="hero__meta">
             <li>Grades {SITE.grades}</li>
             <li>{SITE.season}</li>
-            {/* The league short name (LHDFL) is deliberately not repeated here: the league is
-                already spelled out in full in the eyebrow directly above. */}
+            {/* The league short name is deliberately not repeated here: league membership
+                differs by division (K2 is local-only; grades 3–6 play in the LHDFL) and the
+                distinction is explained in the Football program copy below. */}
           </ul>
           <div class="btn-row">
             {/* ONE hero action only: Registration. Football and Cheer sit directly below the
@@ -155,8 +155,7 @@ const PROGRAM_ITEMS = [
           <p>
             Our mission is to provide high level developmental football and cheer programs. We
             participate in the <a href={SITE.leagueUrl} rel="noopener">{SITE.league} ({SITE.leagueShort})</a>
-            with tackle football teams at grade levels {SITE.grades}, {SITE.season}, run entirely by
-            volunteers.
+            with our grades 3–6 tackle football teams, {SITE.season}, run entirely by volunteers.
           </p>
         </div>
         <div class="about__media">
@@ -273,8 +272,8 @@ const PROGRAM_ITEMS = [
         <div class="fields__more">
           <h3>League venues &amp; directions</h3>
           <p>
-            Away games are played at seven league venues across the region. Directions for each are
-            one tap away.
+            Grades 3–6 away games are played at seven league venues across the region. Directions
+            for each are one tap away.
           </p>
           <details class="fields__details">
             <summary>View all fields / directions</summary>
